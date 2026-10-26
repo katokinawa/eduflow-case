@@ -7,7 +7,7 @@
 //   остальные блоки (и ручные правки в них) не трогаются;
 // - заблокированный блок (замок в слоях, Shift+Ctrl/Cmd+L) не трогается никогда.
 
-const VERSION = 'итерация 3';
+const VERSION = 'итерация 4';
 
 const SCREENS = {
   landing: '288:2781',
@@ -530,6 +530,103 @@ async function blockChat(b) {
   await screenCard(r, { x: IN + 120, y: IN + 372, w: 700, key: 'profile' });
 }
 
+async function blockCertificate(b) {
+  const l = panel(b, 'left', 800, C.olive, 'Certificate');
+  tag(l, '11', 'Сертификат', C.light);
+  const cw = HALF - IN * 2;
+  const cert = await screenCard(l, { x: IN, y: IN + 72, w: cw, h: Math.round(cw * 595 / 842), key: 'certificate', radius: 10 });
+  const h = cert.y + cert.height + IN;
+  l.resize(HALF, h);
+
+  const r = panel(b, 'right', h, C.olive, 'Certificate download');
+  tag(r, '08', 'Скачать из профиля', C.light);
+  caption(r, 'PDF доступен в профиле рядом с контактами кураторов', C.sage, 560);
+  await screenCard(r, { x: IN, y: IN + 150, w: 380, h: Math.round(380 * 840 / 342), key: 'profile', crop: { sx: 1078, sy: 125, sw: 342 } });
+  await screenCard(r, { x: IN + 340, y: h - IN - 170, w: 420, h: Math.round(420 * 115 / 342), key: 'profile', crop: { sx: 1078, sy: 850, sw: 342 } });
+}
+
+async function blockLanding(b) {
+  const p = panel(b, 'full', 1400, C.light, 'Landing');
+  tag(p, '12', 'Лендинг школы', C.olive);
+  caption(p, 'Оффер, преимущества, этапы обучения, курсы, FAQ и заявка', C.mid, 900);
+
+  // длинная страница, разрезанная на три колонки
+  const n = 3;
+  const g = 40;
+  const cw = (CW - IN * 2 - g * (n - 1)) / n;
+  const slice = 8413 / n;
+  for (let i = 0; i < n; i++) {
+    await screenCard(p, {
+      x: IN + i * (cw + g), y: IN + 150, w: cw, h: Math.round(slice * cw / 1440),
+      key: 'landing', crop: { sx: 0, sy: Math.round(i * slice), sw: 1440 }, radius: 12,
+    });
+  }
+  fitHeight(p, IN);
+}
+
+async function blockDesignSystem(b) {
+  // Левая половина: цвета и шрифты
+  const l = panel(b, 'left', 900, C.olive, 'Colors & type');
+  tag(l, '13', 'Дизайн-система', C.light);
+  const sw = [['Olive', C.olive], ['Stone', C.mid], ['Sage', C.sage], ['Light', C.light], ['Accent', C.yellow]];
+  const g = 16;
+  const w = (HALF - IN * 2 - g * (sw.length - 1)) / sw.length;
+  sw.forEach(function (c, k) {
+    const x = IN + k * (w + g);
+    const r = rect(l, { x: x, y: IN + 72, w: w, h: 260, color: c[1], radius: 18, name: 'Swatch / ' + c[0] });
+    r.strokes = fill(C.sage);
+    r.strokeWeight = 1;
+    text(l, c[0], { x: x, y: IN + 352, size: 22, font: 'head', color: C.white });
+    text(l, c[1], { x: x, y: IN + 382, size: 18, color: C.sage });
+  });
+  const ty = IN + 470;
+  const a1 = text(l, 'Aa', { x: IN, y: ty, size: 150, font: 'bold', color: C.white, lh: 100 });
+  text(l, 'PP Neue Montreal\nMedium, Bold — заголовки', { x: IN + a1.width + 32, y: ty + 40, size: 22, color: C.sage, lh: 140 });
+  const a2 = text(l, 'Aa', { x: HALF / 2 + 20, y: ty, size: 150, font: 'body', color: C.yellow, lh: 100 });
+  text(l, 'Golos Text\nRegular — интерфейс', { x: a2.x + a2.width + 32, y: ty + 40, size: 22, color: C.sage, lh: 140 });
+  fitHeight(l, IN);
+
+  // Правая половина: компоненты, вырезанные из экранов
+  const r = panel(b, 'right', l.height, C.olive, 'Components');
+  text(r, 'Компоненты', { x: IN, y: IN - 8, size: 24, font: 'head', color: C.light, name: 'Label' });
+  const fw = HALF - IN * 2;
+  let y = IN + 72;
+  async function piece(key, crop, h0, wpx, x) {
+    const width = wpx || fw;
+    const c = await screenCard(r, { x: x === undefined ? IN : x, y: y, w: width, h: Math.round(h0 * width / crop.sw), key: key, crop: crop, radius: 12, shadow: false });
+    return c;
+  }
+  let c = await piece('catalog', { sx: 870, sy: 30, sw: 550 }, 80);
+  y = c.y + c.height + g;
+  c = await piece('catalog', { sx: 200, sy: 118, sw: 1030 }, 60);
+  y = c.y + c.height + g;
+  c = await piece('profile', { sx: 30, sy: 228, sw: 1020 }, 185);
+  y = c.y + c.height + g;
+  const half = (fw - g) / 2;
+  const t = await piece('catalog', { sx: 30, sy: 362, sw: 580 }, 115, half);
+  const b1 = await piece('catalog', { sx: 505, sy: 505, sw: 195 }, 56, half * 0.62, IN + half + g);
+  y = b1.y + b1.height + g;
+  await piece('profile', { sx: 792, sy: 444, sw: 256 }, 56, half * 0.82, IN + half + g);
+  fitHeight(r, IN);
+  if (r.height < l.height) r.resize(HALF, l.height);
+  if (l.height < r.height) l.resize(HALF, r.height);
+}
+
+async function blockFinal(b) {
+  const p = panel(b, 'full', 900, C.light, 'Final');
+  text(p, 'Спасибо\nза внимание', { x: IN, y: IN, size: 80, font: 'head', color: C.ink, lh: 105, name: 'Thanks' });
+  const mail = chip(p, 'solntsee2017@mail.ru', { y: IN + 8, color: C.olive, bg: C.yellow, stroke: C.yellow, size: 28 });
+  mail.x = CW - IN - mail.width;
+  const meta = text(p, 'UX/UI-дизайн · 2025', { y: IN + 90, size: 24, color: C.mid, align: 'RIGHT', width: 400 });
+  meta.x = CW - IN - 400;
+
+  const wm = text(p, 'EDUFLOW', { y: IN + 260, size: 300, font: 'bold', color: C.olive, lh: 100, name: 'Wordmark' });
+  wm.textAutoResize = 'WIDTH_AND_HEIGHT';
+  wm.fontSize = Math.floor(wm.fontSize * (CW - IN * 2) / wm.width);
+  wm.x = Math.round((CW - wm.width) / 2);
+  fitHeight(p, IN - 20);
+}
+
 const BLOCKS = [
   { id: 'cover', rev: 2, name: '01 Обложка', build: blockCover },
   { id: 'about', rev: 2, name: '02 О проекте', build: blockAbout },
@@ -541,6 +638,10 @@ const BLOCKS = [
   { id: 'progress', rev: 3, name: '08 Мои курсы и прогресс', build: blockProgress },
   { id: 'lesson', rev: 3, name: '09 Урок', build: blockLesson },
   { id: 'chat', rev: 3, name: '10 Чат, профиль и календарь', build: blockChat },
+  { id: 'certificate', rev: 4, name: '11 Сертификат', build: blockCertificate },
+  { id: 'landing', rev: 4, name: '12 Лендинг', build: blockLanding },
+  { id: 'design', rev: 4, name: '13 Дизайн-система', build: blockDesignSystem },
+  { id: 'final', rev: 4, name: '14 Финал', build: blockFinal },
 ];
 
 // ---------- page & blocks management ----------
