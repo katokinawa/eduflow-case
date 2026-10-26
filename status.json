@@ -1,7 +1,7 @@
 {
-  "version": "итерация 2.2",
-  "time": "2026-10-26T13:21:43.615Z",
-  "result": "Кейс обновлён (итерация 2.2): пересобрано блоков — 1.",
+  "version": "итерация 3",
+  "time": "2026-10-26T13:26:28.735Z",
+  "result": "Кейс обновлён (итерация 3): пересобрано блоков — 5.",
   "blocks": [
     {
       "id": "cover",
@@ -33,7 +33,7 @@
       "preview": "previews/04-numbers.png",
       "height": 610,
       "locked": false,
-      "rev": 2
+      "rev": 3
     },
     {
       "id": "jtbd",
@@ -50,6 +50,38 @@
       "height": 820,
       "locked": false,
       "rev": 2
+    },
+    {
+      "id": "catalog",
+      "name": "07 Каталог и страница курса",
+      "preview": "previews/07-catalog.png",
+      "height": 920,
+      "locked": false,
+      "rev": 3
+    },
+    {
+      "id": "progress",
+      "name": "08 Мои курсы и прогресс",
+      "preview": "previews/08-progress.png",
+      "height": 973,
+      "locked": false,
+      "rev": 3
+    },
+    {
+      "id": "lesson",
+      "name": "09 Урок",
+      "preview": "previews/09-lesson.png",
+      "height": 1020,
+      "locked": false,
+      "rev": 3
+    },
+    {
+      "id": "chat",
+      "name": "10 Чат, профиль и календарь",
+      "preview": "previews/10-chat.png",
+      "height": 940,
+      "locked": false,
+      "rev": 3
     }
   ]
 }
