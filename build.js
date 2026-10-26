@@ -7,7 +7,7 @@
 //   остальные блоки (и ручные правки в них) не трогаются;
 // - заблокированный блок (замок в слоях, Shift+Ctrl/Cmd+L) не трогается никогда.
 
-const VERSION = 'итерация 2.1';
+const VERSION = 'итерация 2.2';
 
 const SCREENS = {
   landing: '288:2781',
@@ -510,6 +510,152 @@ function blockRev(node) {
   return m ? parseInt(m[1], 10) : 0;
 }
 
+// ---------- previews ----------
+// После сборки блоки экспортируются в PNG и одним коммитом выкладываются в ветку previews,
+// чтобы их можно было посмотреть без API Figma. Токен GitHub хранится только в clientStorage Figma.
+
+const GH_API = 'https://api.github.com/repos/katokinawa/eduflow-case';
+const PREVIEW_BRANCH = 'previews';
+const TOKEN_KEY = 'eduflowGithubToken';
+const SKIP_KEY = 'eduflowPreviewsOff';
+
+function utf8Bytes(str) {
+  const out = [];
+  for (let i = 0; i < str.length; i++) {
+    let c = str.charCodeAt(i);
+    if (c >= 0xd800 && c < 0xdc00 && i + 1 < str.length) {
+      c = 0x10000 + ((c - 0xd800) << 10) + (str.charCodeAt(++i) - 0xdc00);
+    }
+    if (c < 0x80) out.push(c);
+    else if (c < 0x800) out.push(0xc0 | (c >> 6), 0x80 | (c & 63));
+    else if (c < 0x10000) out.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
+    else out.push(0xf0 | (c >> 18), 0x80 | ((c >> 12) & 63), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
+  }
+  return new Uint8Array(out);
+}
+
+async function gh(token, method, path, body) {
+  const init = {
+    method: method,
+    headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+  };
+  if (body) init.body = JSON.stringify(body);
+  const res = await fetch(GH_API + path, init);
+  const text = await res.text();
+  let data = null;
+  try { data = JSON.parse(text); } catch (e) { /* не JSON */ }
+  if (res.status >= 300) {
+    const err = new Error('GitHub ' + res.status + ' (' + method + ' ' + path + ')' + (data && data.message ? ': ' + data.message : ''));
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
+
+function askToken() {
+  return new Promise(function (resolve) {
+    figma.showUI(
+      '<style>body{font:13px -apple-system,BlinkMacSystemFont,sans-serif;margin:0;padding:16px;color:#1e1e1a}' +
+      'p{margin:6px 0 10px;line-height:1.4;color:#515144}input{width:100%;box-sizing:border-box;padding:8px;margin-bottom:10px;' +
+      'border:1px solid #abada1;border-radius:6px}button{padding:8px 14px;margin-right:6px;border-radius:6px;border:0;cursor:pointer}' +
+      '#ok{background:#515144;color:#fff}#skip{background:#e1e2df}</style>' +
+      '<b>Превью кейса на GitHub</b>' +
+      '<p>Вставьте GitHub-токен с доступом Contents: Read and write к репозиторию eduflow-case. ' +
+      'Он сохранится только в Figma на этом компьютере.</p>' +
+      '<input id="t" type="password" placeholder="github_pat_…" autofocus>' +
+      '<button id="ok">Сохранить</button><button id="skip">Не выгружать превью</button>' +
+      '<script>' +
+      'function send(t){parent.postMessage({pluginMessage:{token:t}},"*")}' +
+      'document.getElementById("ok").onclick=function(){send(document.getElementById("t").value.trim())};' +
+      'document.getElementById("skip").onclick=function(){send(null)};' +
+      'document.getElementById("t").onkeydown=function(e){if(e.key==="Enter")send(this.value.trim())};' +
+      '</script>',
+      { width: 380, height: 236, title: 'EduFlow Case Builder' }
+    );
+    figma.ui.onmessage = function (m) {
+      figma.ui.close();
+      resolve(m ? m.token : null);
+    };
+  });
+}
+
+// Возвращает токен или null, если превью выключены.
+async function getToken() {
+  if (await figma.clientStorage.getAsync(SKIP_KEY)) return null;
+  let token = await figma.clientStorage.getAsync(TOKEN_KEY);
+  if (token) return token;
+  token = await askToken();
+  if (token === null) {
+    await figma.clientStorage.setAsync(SKIP_KEY, true);
+    return null;
+  }
+  if (!token) return null;
+  await figma.clientStorage.setAsync(TOKEN_KEY, token);
+  return token;
+}
+
+// Выкладывает файлы [{ path, bytes }] одним коммитом в ветку previews.
+async function commitFiles(token, files, message) {
+  const ref = await gh(token, 'GET', '/git/ref/heads/' + PREVIEW_BRANCH);
+  const parent = ref.object.sha;
+  const baseTree = (await gh(token, 'GET', '/git/commits/' + parent)).tree.sha;
+  const tree = [];
+  for (const f of files) {
+    const blob = await gh(token, 'POST', '/git/blobs', { content: figma.base64Encode(f.bytes), encoding: 'base64' });
+    tree.push({ path: f.path, mode: '100644', type: 'blob', sha: blob.sha });
+  }
+  const newTree = await gh(token, 'POST', '/git/trees', { base_tree: baseTree, tree: tree });
+  if (newTree.sha === baseTree) return false;
+  const commit = await gh(token, 'POST', '/git/commits', { message: message, tree: newTree.sha, parents: [parent] });
+  await gh(token, 'PATCH', '/git/refs/heads/' + PREVIEW_BRANCH, { sha: commit.sha });
+  return true;
+}
+
+function statusFile(status) {
+  return { path: 'status.json', bytes: utf8Bytes(JSON.stringify(status, null, 2)) };
+}
+
+async function uploadPreviews(blocks, msg) {
+  const token = await getToken();
+  if (!token) return 'Превью выключены.';
+
+  const files = [];
+  const list = [];
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    const id = b.getPluginData('blockId');
+    const path = 'previews/' + String(i + 1).padStart(2, '0') + '-' + id + '.png';
+    const bytes = await b.exportAsync({ format: 'PNG', constraint: { type: 'SCALE', value: 0.5 } });
+    files.push({ path: path, bytes: bytes });
+    list.push({ id: id, name: b.name, preview: path, height: Math.round(b.height), locked: b.locked, rev: blockRev(b) });
+  }
+  files.push(statusFile({ version: VERSION, time: new Date().toISOString(), result: msg, blocks: list }));
+
+  try {
+    const changed = await commitFiles(token, files, 'Previews: ' + VERSION);
+    return changed ? 'Превью выгружены.' : 'Превью без изменений.';
+  } catch (e) {
+    if (e.status === 401 || e.status === 403 || e.status === 404) {
+      await figma.clientStorage.deleteAsync(TOKEN_KEY);
+      throw new Error(e.message + ' — токен сброшен, при следующем запуске плагин попросит новый');
+    }
+    throw e;
+  }
+}
+
+// Если сборка упала — выложить хотя бы status.json с ошибкой.
+async function reportError(err) {
+  try {
+    if (await figma.clientStorage.getAsync(SKIP_KEY)) return;
+    const token = await figma.clientStorage.getAsync(TOKEN_KEY);
+    if (!token) return;
+    await commitFiles(token, [statusFile({
+      version: VERSION, time: new Date().toISOString(),
+      error: err && err.message ? err.message : String(err), stack: err && err.stack ? String(err.stack) : '',
+    })], 'Previews: ошибка ' + VERSION);
+  } catch (e) { /* ошибку сборки важнее показать в Figma */ }
+}
+
 async function main() {
   await Promise.all([
     pickFont('body', [{ family: 'Golos Text', style: 'Regular' }, { family: 'Inter', style: 'Regular' }]),
@@ -580,7 +726,19 @@ async function main() {
     : 'Кейс актуален (' + VERSION + '): изменений нет.';
   if (skipped.length) msg += ' Заблокированы и не тронуты: ' + skipped.join(', ') + '.';
   if (missingFonts.length) msg += ' Нет шрифтов: ' + missingFonts.join(', ') + ' — использован запасной.';
+
+  figma.notify('Выгружаю превью на GitHub…', { timeout: 3000 });
+  try {
+    msg += ' ' + await uploadPreviews(ordered, msg);
+  } catch (e) {
+    msg += ' Превью не выгружены: ' + (e && e.message ? e.message : e);
+  }
   return msg;
 }
 
-return await main();
+try {
+  return await main();
+} catch (e) {
+  await reportError(e);
+  throw e;
+}
