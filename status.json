@@ -1,0 +1,55 @@
+{
+  "version": "итерация 2.2",
+  "time": "2026-10-26T13:21:43.615Z",
+  "result": "Кейс обновлён (итерация 2.2): пересобрано блоков — 1.",
+  "blocks": [
+    {
+      "id": "cover",
+      "name": "01 Обложка",
+      "preview": "previews/01-cover.png",
+      "height": 1378,
+      "locked": false,
+      "rev": 2
+    },
+    {
+      "id": "about",
+      "name": "02 О проекте",
+      "preview": "previews/02-about.png",
+      "height": 923,
+      "locked": false,
+      "rev": 2
+    },
+    {
+      "id": "goals",
+      "name": "03 Подход",
+      "preview": "previews/03-goals.png",
+      "height": 826,
+      "locked": false,
+      "rev": 2
+    },
+    {
+      "id": "numbers",
+      "name": "04 В цифрах",
+      "preview": "previews/04-numbers.png",
+      "height": 610,
+      "locked": false,
+      "rev": 2
+    },
+    {
+      "id": "jtbd",
+      "name": "05 Что нужно студенту",
+      "preview": "previews/05-jtbd.png",
+      "height": 777,
+      "locked": false,
+      "rev": 2
+    },
+    {
+      "id": "auth",
+      "name": "06 Регистрация и вход",
+      "preview": "previews/06-auth.png",
+      "height": 820,
+      "locked": false,
+      "rev": 2
+    }
+  ]
+}
