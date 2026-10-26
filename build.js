@@ -6,8 +6,11 @@
 // - пересобирается только блок, у которого в BLOCKS повышен rev, или которого нет на странице;
 //   остальные блоки (и ручные правки в них) не трогаются;
 // - заблокированный блок (замок в слоях, Shift+Ctrl/Cmd+L) не трогается никогда.
+//
+// Live-режим: после сборки плагин не закрывается, а каждые 10 секунд проверяет GitHub
+// и сам применяет новую версию build.js (её код выполняется с __nested = true, без своего live-цикла).
 
-const VERSION = 'итерация 4';
+const VERSION = 'итерация 4.1';
 
 const SCREENS = {
   landing: '288:2781',
@@ -828,7 +831,7 @@ async function reportError(err) {
   } catch (e) { /* ошибку сборки важнее показать в Figma */ }
 }
 
-async function main() {
+async function main(nested) {
   await Promise.all([
     pickFont('body', [{ family: 'Golos Text', style: 'Regular' }, { family: 'Inter', style: 'Regular' }]),
     pickFont('head', [{ family: 'PP Neue Montreal', style: 'Medium' }, { family: 'Golos Text', style: 'Medium' }, { family: 'Inter', style: 'Medium' }]),
@@ -888,8 +891,11 @@ async function main() {
     y += b.height;
   });
 
-  await figma.setCurrentPageAsync(page);
-  figma.viewport.scrollAndZoomIntoView(ordered);
+  // в live-обновлениях не переключаем страницу и не двигаем экран — вы можете работать в другом месте
+  if (!nested) {
+    await figma.setCurrentPageAsync(page);
+    figma.viewport.scrollAndZoomIntoView(ordered);
+  }
 
   page.setPluginData('lastRun', VERSION + ' · ' + new Date().toISOString());
 
@@ -908,8 +914,80 @@ async function main() {
   return msg;
 }
 
+// ---------- live mode ----------
+
+const LIVE_HTML =
+  '<style>body{font:12px -apple-system,BlinkMacSystemFont,sans-serif;margin:0;padding:12px 14px;color:#1e1e1a}' +
+  'b{display:block;margin-bottom:6px}i{display:inline-block;width:8px;height:8px;border-radius:4px;background:#fdf169;' +
+  'border:1px solid #96968b;margin-right:6px}#s{color:#515144;line-height:1.4;min-height:34px}' +
+  'button{margin-top:8px;padding:6px 12px;border:0;border-radius:6px;background:#e1e2df;cursor:pointer}</style>' +
+  '<b><i></i>Live — следит за обновлениями кейса</b><div id="s">…</div><button id="stop">Остановить</button>' +
+  '<script>onmessage=function(e){var m=e.data.pluginMessage;if(m&&m.status)document.getElementById("s").textContent=m.status};' +
+  'document.getElementById("stop").onclick=function(){parent.postMessage({pluginMessage:{stop:true}},"*")};</script>';
+
+function hhmm() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+async function ghRaw(token, path, accept) {
+  const headers = { Accept: accept };
+  if (token) headers.Authorization = 'Bearer ' + token;
+  const res = await fetch(GH_API + path + (path.indexOf('?') === -1 ? '?' : '&') + 't=' + Date.now(), { method: 'GET', headers: headers });
+  if (!res.ok) throw new Error('GitHub ' + res.status);
+  return (await res.text()).trim();
+}
+
+function live(firstMsg) {
+  return new Promise(function (resolve) {
+    let current = null;
+    let stopped = false;
+
+    function show(status) {
+      figma.showUI(LIVE_HTML, { width: 300, height: 128, title: 'EduFlow Case Builder' });
+      figma.ui.onmessage = function (m) {
+        if (m && m.stop) {
+          stopped = true;
+          resolve('Live-режим остановлен. ' + (current ? 'Последняя версия: ' + current.slice(0, 7) + '.' : ''));
+        }
+      };
+      figma.ui.postMessage({ status: status });
+    }
+    function status(text) { figma.ui.postMessage({ status: text }); }
+
+    show(hhmm() + ' · ' + firstMsg);
+
+    async function tick() {
+      if (stopped) return;
+      const token = await figma.clientStorage.getAsync(TOKEN_KEY);
+      try {
+        const sha = await ghRaw(token, '/commits/main', 'application/vnd.github.sha');
+        if (current && sha !== current) {
+          current = sha;
+          status(hhmm() + ' · применяю версию ' + sha.slice(0, 7) + '…');
+          const code = await ghRaw(token, '/contents/build.js?ref=' + sha, 'application/vnd.github.raw');
+          const run = new Function('figma', '__nested', '"use strict"; return (async function () {\n' + code + '\n})();');
+          const msg = await run(figma, true);
+          show(hhmm() + ' · ' + msg);
+          figma.notify('EduFlow: ' + msg, { timeout: 6000 });
+        } else {
+          current = sha;
+        }
+      } catch (e) {
+        show(hhmm() + ' · ошибка: ' + (e && e.message ? e.message : e) + ' — жду следующую версию');
+      }
+      // с токеном лимит GitHub 5000 запросов в час, без него — 60
+      setTimeout(tick, token ? 10000 : 60000);
+    }
+    tick();
+  });
+}
+
+const NESTED = typeof __nested !== 'undefined' && __nested;
 try {
-  return await main();
+  const msg = await main(NESTED);
+  if (NESTED) return msg;
+  return await live(msg);
 } catch (e) {
   await reportError(e);
   throw e;
