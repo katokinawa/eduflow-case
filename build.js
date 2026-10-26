@@ -7,7 +7,7 @@
 //   остальные блоки (и ручные правки в них) не трогаются;
 // - заблокированный блок (замок в слоях, Shift+Ctrl/Cmd+L) не трогается никогда.
 
-const VERSION = 'итерация 2.2';
+const VERSION = 'итерация 3';
 
 const SCREENS = {
   landing: '288:2781',
@@ -404,8 +404,8 @@ async function blockNumbers(b) {
     if (i === 0) {
       await screenCard(c, { x: vx, y: 24, w: vw, h: ch - 24, key: 'landing', radius: 10, shadow: false });
     } else if (i === 1) {
-      const cwid = Math.round(cw * 0.55);
-      await screenCard(c, { x: cw - cwid - 24, y: (ch - cwid * 595 / 842) / 2, w: cwid, h: Math.round(cwid * 595 / 842), key: 'certificate', radius: 8 });
+      const cwid = Math.round(cw * 0.5);
+      await screenCard(c, { x: cw - cwid - 24, y: 24, w: cwid, h: Math.round(cwid * 595 / 842), key: 'certificate', radius: 8 });
     } else if (i === 2) {
       [C.olive, C.mid, C.sage, C.light, C.yellow].forEach(function (col, k) {
         const e = figma.createEllipse();
@@ -419,8 +419,12 @@ async function blockNumbers(b) {
         c.appendChild(e);
       });
     } else {
-      text(c, 'Aa', { x: vx, y: 36, size: 110, font: 'bold', color: C.olive, lh: 100 });
-      text(c, 'Aa', { x: vx, y: 36 + 120, size: 110, font: 'body', color: C.mid, lh: 100 });
+      // два начертания рядом: заголовочный и основной шрифт
+      const a2 = text(c, 'Aa', { size: 88, font: 'body', color: C.mid, lh: 100, name: 'Golos Text' });
+      const a1 = text(c, 'Aa', { size: 88, font: 'bold', color: C.olive, lh: 100, name: 'PP Neue Montreal' });
+      a2.x = cw - 24 - a2.width;
+      a1.x = a2.x - 20 - a1.width;
+      a1.y = a2.y = Math.round((ch - a1.height) / 2);
     }
   }
 }
@@ -463,13 +467,80 @@ async function blockAuth(b) {
   }
 }
 
+// Короткая подпись под меткой раздела.
+function caption(parent, str, color, width) {
+  return text(parent, str, { x: IN, y: IN + 40, size: 26, color: color, lh: 135, width: width || 560, name: 'Caption' });
+}
+
+async function blockCatalog(b) {
+  const h = 880;
+  const l = panel(b, 'left', h, C.olive, 'Catalog');
+  tag(l, '03', 'Каталог курсов', C.light);
+  await browser(l, { x: IN, y: IN + 72, w: 1000, key: 'catalog' });
+
+  // длинная страница курса: начало и середина, как два положения прокрутки
+  const r = panel(b, 'right', h, C.olive, 'Course page');
+  tag(r, '04', 'Страница курса', C.light);
+  const cw = 440;
+  await screenCard(r, { x: IN, y: IN + 72, w: cw, h: 760, key: 'coursePromo', crop: { sx: 0, sy: 0, sw: 1440 } });
+  await screenCard(r, { x: IN + cw + 24, y: IN + 192, w: cw, h: 760, key: 'coursePromo', crop: { sx: 0, sy: 1640, sw: 1440 } });
+}
+
+async function blockProgress(b) {
+  const p = panel(b, 'full', 900, C.light, 'Progress');
+  tag(p, '05 · 06', 'Мои курсы и прогресс', C.olive);
+  caption(p, 'Прогресс и следующий урок видны сразу', C.mid);
+
+  const bw = 1080;
+  const win = await browser(p, { x: CW - IN - bw, y: IN, w: bw, key: 'course' });
+
+  const lw = CW - IN * 2 - bw - 48;
+  const z1 = await screenCard(p, { x: IN, y: IN + 150, w: lw, h: Math.round(lw * 350 / 692), key: 'myCourses', crop: { sx: 20, sy: 125, sw: 692 } });
+  const tw = (lw - 24) / 2;
+  const th = Math.round(tw * 328 / 338);
+  await screenCard(p, { x: IN, y: z1.y + z1.height + 24, w: tw, h: th, key: 'course', crop: { sx: 728, sy: 190, sw: 338 } });
+  await screenCard(p, { x: IN + tw + 24, y: z1.y + z1.height + 24, w: tw, h: th, key: 'course', crop: { sx: 1082, sy: 190, sw: 338 } });
+
+  fitHeight(p, IN);
+  if (p.height < win.y + win.height + IN) p.resize(CW, win.y + win.height + IN);
+}
+
+async function blockLesson(b) {
+  const p = panel(b, 'full', 980, C.olive, 'Lesson');
+  tag(p, '07', 'Урок', C.light);
+  caption(p, 'Теория, код, домашнее задание и оглавление — на одном экране', C.sage, 900);
+
+  // окно выходит за нижний край, поверх — увеличенные фрагменты
+  await browser(p, { x: IN, y: IN + 130, w: 1180, key: 'lesson' });
+  const sw = 300;
+  await screenCard(p, { x: CW - IN - sw, y: IN + 130, w: sw, h: Math.round(sw * 802 / 340), key: 'lesson', crop: { sx: 1080, sy: 190, sw: 340 } });
+  const cw = 720;
+  await screenCard(p, { x: 700, y: 640, w: cw, h: Math.round(cw * 325 / 1006), key: 'lesson', crop: { sx: 40, sy: 607, sw: 1006 } });
+}
+
+async function blockChat(b) {
+  const h = 880;
+  const l = panel(b, 'left', h, C.light, 'Chat');
+  tag(l, '09', 'Чат с наставником', C.olive);
+  await browser(l, { x: IN, y: IN + 72, w: 1000, key: 'chat' });
+
+  const r = panel(b, 'right', h, C.light, 'Profile & calendar');
+  tag(r, '08 · 10', 'Профиль и календарь', C.olive);
+  await screenCard(r, { x: IN, y: IN + 72, w: 700, key: 'calendar' });
+  await screenCard(r, { x: IN + 120, y: IN + 372, w: 700, key: 'profile' });
+}
+
 const BLOCKS = [
   { id: 'cover', rev: 2, name: '01 Обложка', build: blockCover },
   { id: 'about', rev: 2, name: '02 О проекте', build: blockAbout },
   { id: 'goals', rev: 2, name: '03 Подход', build: blockApproach },
-  { id: 'numbers', rev: 2, name: '04 В цифрах', build: blockNumbers },
+  { id: 'numbers', rev: 3, name: '04 В цифрах', build: blockNumbers },
   { id: 'jtbd', rev: 2, name: '05 Что нужно студенту', build: blockJtbd },
   { id: 'auth', rev: 2, name: '06 Регистрация и вход', build: blockAuth },
+  { id: 'catalog', rev: 3, name: '07 Каталог и страница курса', build: blockCatalog },
+  { id: 'progress', rev: 3, name: '08 Мои курсы и прогресс', build: blockProgress },
+  { id: 'lesson', rev: 3, name: '09 Урок', build: blockLesson },
+  { id: 'chat', rev: 3, name: '10 Чат, профиль и календарь', build: blockChat },
 ];
 
 // ---------- page & blocks management ----------
