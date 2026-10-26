@@ -3,10 +3,11 @@
 //
 // Правила обновления:
 // - блоки живут на странице «Кейс — EduFlow» и узнаются по pluginData blockId;
-// - при каждом запуске блоки из BLOCKS пересобираются на своём месте;
-// - заблокированный блок (замок в слоях, Shift+Ctrl/Cmd+L) не трогается — так сохраняются ручные правки.
+// - пересобирается только блок, у которого в BLOCKS повышен rev, или которого нет на странице;
+//   остальные блоки (и ручные правки в них) не трогаются;
+// - заблокированный блок (замок в слоях, Shift+Ctrl/Cmd+L) не трогается никогда.
 
-const VERSION = 'итерация 2';
+const VERSION = 'итерация 2.1';
 
 const SCREENS = {
   landing: '288:2781',
@@ -463,12 +464,12 @@ async function blockAuth(b) {
 }
 
 const BLOCKS = [
-  { id: 'cover', name: '01 Обложка', build: blockCover },
-  { id: 'about', name: '02 О проекте', build: blockAbout },
-  { id: 'goals', name: '03 Подход', build: blockApproach },
-  { id: 'numbers', name: '04 В цифрах', build: blockNumbers },
-  { id: 'jtbd', name: '05 Что нужно студенту', build: blockJtbd },
-  { id: 'auth', name: '06 Регистрация и вход', build: blockAuth },
+  { id: 'cover', rev: 2, name: '01 Обложка', build: blockCover },
+  { id: 'about', rev: 2, name: '02 О проекте', build: blockAbout },
+  { id: 'goals', rev: 2, name: '03 Подход', build: blockApproach },
+  { id: 'numbers', rev: 2, name: '04 В цифрах', build: blockNumbers },
+  { id: 'jtbd', rev: 2, name: '05 Что нужно студенту', build: blockJtbd },
+  { id: 'auth', rev: 2, name: '06 Регистрация и вход', build: blockAuth },
 ];
 
 // ---------- page & blocks management ----------
@@ -499,6 +500,14 @@ function moveLegacy(page) {
       n.name = n.name + ' (черновик v0)';
     }
   });
+}
+
+// Ревизия собранного блока; у блоков, собранных до появления rev, она берётся из номера итерации.
+function blockRev(node) {
+  const rev = parseInt(node.getPluginData('rev'), 10);
+  if (!isNaN(rev)) return rev;
+  const m = /итерация (\d+)/.exec(node.getPluginData('version'));
+  return m ? parseInt(m[1], 10) : 0;
 }
 
 async function main() {
@@ -532,6 +541,10 @@ async function main() {
       ordered.push(old);
       continue;
     }
+    if (old && blockRev(old) >= def.rev) {
+      ordered.push(old);
+      continue;
+    }
     const b = figma.createFrame();
     b.name = def.name;
     b.resize(W, 100);
@@ -544,6 +557,7 @@ async function main() {
     fitHeight(b, i === BLOCKS.length - 1 ? PY * 2 : PY);
     b.setPluginData('blockId', def.id);
     b.setPluginData('version', VERSION);
+    b.setPluginData('rev', String(def.rev));
     if (old) old.remove();
     ordered.push(b);
     built++;
@@ -559,7 +573,11 @@ async function main() {
   await figma.setCurrentPageAsync(page);
   figma.viewport.scrollAndZoomIntoView(ordered);
 
-  let msg = 'Кейс обновлён (' + VERSION + '): пересобрано блоков — ' + built + '.';
+  page.setPluginData('lastRun', VERSION + ' · ' + new Date().toISOString());
+
+  let msg = built
+    ? 'Кейс обновлён (' + VERSION + '): пересобрано блоков — ' + built + '.'
+    : 'Кейс актуален (' + VERSION + '): изменений нет.';
   if (skipped.length) msg += ' Заблокированы и не тронуты: ' + skipped.join(', ') + '.';
   if (missingFonts.length) msg += ' Нет шрифтов: ' + missingFonts.join(', ') + ' — использован запасной.';
   return msg;
