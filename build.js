@@ -10,7 +10,7 @@
 // Live-режим: после сборки плагин не закрывается, а каждые 10 секунд проверяет GitHub
 // и сам применяет новую версию build.js (её код выполняется с __nested = true, без своего live-цикла).
 
-const VERSION = 'итерация 4.1';
+const VERSION = 'итерация 4.2';
 
 const SCREENS = {
   landing: '288:2781',
@@ -582,11 +582,13 @@ async function blockDesignSystem(b) {
     text(l, c[0], { x: x, y: IN + 352, size: 22, font: 'head', color: C.white });
     text(l, c[1], { x: x, y: IN + 382, size: 18, color: C.sage });
   });
-  const ty = IN + 470;
-  const a1 = text(l, 'Aa', { x: IN, y: ty, size: 150, font: 'bold', color: C.white, lh: 100 });
-  text(l, 'PP Neue Montreal\nMedium, Bold — заголовки', { x: IN + a1.width + 32, y: ty + 40, size: 22, color: C.sage, lh: 140 });
-  const a2 = text(l, 'Aa', { x: HALF / 2 + 20, y: ty, size: 150, font: 'body', color: C.yellow, lh: 100 });
-  text(l, 'Golos Text\nRegular — интерфейс', { x: a2.x + a2.width + 32, y: ty + 40, size: 22, color: C.sage, lh: 140 });
+  // шрифты — двумя строками: образец слева, подпись справа от общей колонки образцов
+  const ty = IN + 450;
+  const a1 = text(l, 'Aa', { x: IN, y: ty, size: 120, font: 'bold', color: C.white, lh: 100 });
+  const a2 = text(l, 'Aa', { x: IN, y: ty + 150, size: 120, font: 'body', color: C.yellow, lh: 100 });
+  const lx = IN + Math.max(a1.width, a2.width) + 40;
+  text(l, 'PP Neue Montreal\nMedium, Bold — заголовки', { x: lx, y: ty + 30, size: 24, color: C.sage, lh: 140 });
+  text(l, 'Golos Text\nRegular — интерфейс', { x: lx, y: ty + 180, size: 24, color: C.sage, lh: 140 });
   fitHeight(l, IN);
 
   // Правая половина: компоненты, вырезанные из экранов
@@ -643,7 +645,7 @@ const BLOCKS = [
   { id: 'chat', rev: 3, name: '10 Чат, профиль и календарь', build: blockChat },
   { id: 'certificate', rev: 4, name: '11 Сертификат', build: blockCertificate },
   { id: 'landing', rev: 4, name: '12 Лендинг', build: blockLanding },
-  { id: 'design', rev: 4, name: '13 Дизайн-система', build: blockDesignSystem },
+  { id: 'design', rev: 5, name: '13 Дизайн-система', build: blockDesignSystem },
   { id: 'final', rev: 4, name: '14 Финал', build: blockFinal },
 ];
 
