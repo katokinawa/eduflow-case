@@ -10,7 +10,7 @@
 // Live-режим: после сборки плагин не закрывается, а каждые 10 секунд проверяет GitHub
 // и сам применяет новую версию build.js (её код выполняется с __nested = true, без своего live-цикла).
 
-const VERSION = 'итерация 4.2';
+const VERSION = 'итерация 5';
 
 const SCREENS = {
   landing: '288:2781',
@@ -282,7 +282,8 @@ async function blockCover(b) {
   wm.x = Math.round((CW - wm.width) / 2);
 
   const mw = 1040;
-  const mon = await monitor(p, { x: (CW - mw) / 2, y: Math.round(wm.y + wm.height * 0.6), w: mw, key: 'landing' });
+  const mon = await screenCard(p, { x: (CW - mw) / 2, y: Math.round(wm.y + wm.height * 0.6), w: mw, key: 'landing', radius: 20 });
+  mon.name = 'Mockup / Screen';
   const bottom = mon.y + mon.height;
 
   const sideW = (CW - mw) / 2 - IN - 40;
@@ -632,6 +633,22 @@ async function blockFinal(b) {
   fitHeight(p, IN - 20);
 }
 
+// Регистрация и вход, вариант 2: общий шаблон показан один раз (иллюстрация), рядом — обе формы крупно.
+async function blockAuth2(b) {
+  const p = panel(b, 'full', 900, C.light, 'Auth v2');
+  tag(p, '01 · 02', 'Регистрация и вход', C.olive);
+  caption(p, 'Один шаблон — две формы', C.mid);
+
+  const y0 = IN + 130;
+  const fw = 560;
+  const regH = Math.round(fw * 780 / 692);
+  const inH = Math.round(fw * 560 / 692);
+  await screenCard(p, { x: IN, y: y0, w: 440, h: regH, key: 'registration', crop: { sx: 0, sy: 0, sw: Math.round(1024 * 440 / regH) } });
+  await screenCard(p, { x: IN + 480, y: y0, w: fw, h: regH, key: 'registration', crop: { sx: 728, sy: 20, sw: 692 } });
+  await screenCard(p, { x: IN + 1080, y: y0 + regH - inH, w: fw, h: inH, key: 'signin', crop: { sx: 728, sy: 20, sw: 692 } });
+  fitHeight(p, IN);
+}
+
 const BLOCKS = [
   { id: 'cover', rev: 2, name: '01 Обложка', build: blockCover },
   { id: 'about', rev: 2, name: '02 О проекте', build: blockAbout },
@@ -639,6 +656,7 @@ const BLOCKS = [
   { id: 'numbers', rev: 3, name: '04 В цифрах', build: blockNumbers },
   { id: 'jtbd', rev: 2, name: '05 Что нужно студенту', build: blockJtbd },
   { id: 'auth', rev: 2, name: '06 Регистрация и вход', build: blockAuth },
+  { id: 'auth2', rev: 6, name: '06 Регистрация и вход — вариант 2', build: blockAuth2 },
   { id: 'catalog', rev: 3, name: '07 Каталог и страница курса', build: blockCatalog },
   { id: 'progress', rev: 3, name: '08 Мои курсы и прогресс', build: blockProgress },
   { id: 'lesson', rev: 3, name: '09 Урок', build: blockLesson },
@@ -772,11 +790,20 @@ async function getToken() {
 }
 
 // Выкладывает файлы [{ path, bytes }] одним коммитом в ветку previews.
-async function commitFiles(token, files, message) {
+async function commitFiles(token, files, message, prune) {
   const ref = await gh(token, 'GET', '/git/ref/heads/' + PREVIEW_BRANCH);
   const parent = ref.object.sha;
   const baseTree = (await gh(token, 'GET', '/git/commits/' + parent)).tree.sha;
   const tree = [];
+  // превью удалённых блоков убираются из ветки
+  let current = [];
+  if (prune) {
+    try { current = await gh(token, 'GET', '/contents/previews?ref=' + PREVIEW_BRANCH); } catch (e) { /* папки ещё нет */ }
+  }
+  const keep = files.map(function (f) { return f.path; });
+  (current || []).forEach(function (c) {
+    if (/\.png$/.test(c.path) && keep.indexOf(c.path) === -1) tree.push({ path: c.path, mode: '100644', type: 'blob', sha: null });
+  });
   for (const f of files) {
     const blob = await gh(token, 'POST', '/git/blobs', { content: figma.base64Encode(f.bytes), encoding: 'base64' });
     tree.push({ path: f.path, mode: '100644', type: 'blob', sha: blob.sha });
@@ -809,7 +836,7 @@ async function uploadPreviews(blocks, msg) {
   files.push(statusFile({ version: VERSION, time: new Date().toISOString(), result: msg, blocks: list }));
 
   try {
-    const changed = await commitFiles(token, files, 'Previews: ' + VERSION);
+    const changed = await commitFiles(token, files, 'Previews: ' + VERSION, true);
     return changed ? 'Превью выгружены.' : 'Превью без изменений.';
   } catch (e) {
     if (e.status === 401 || e.status === 403 || e.status === 404) {
@@ -833,6 +860,52 @@ async function reportError(err) {
   } catch (e) { /* ошибку сборки важнее показать в Figma */ }
 }
 
+const BUILT_BEFORE_TRACKING = ['cover', 'about', 'goals', 'numbers', 'jtbd', 'auth', 'catalog', 'progress', 'lesson', 'chat', 'certificate', 'landing', 'design', 'final'];
+
+// Сдвигает блоки кейса, которые начинаются ниже y, на delta (кроме except).
+function shiftBelow(page, y, delta, except) {
+  if (!delta) return;
+  page.children.forEach(function (n) {
+    if (n !== except && n.getPluginData('blockId') && n.y >= y - 1) n.y += delta;
+  });
+}
+
+// Точечные правки внутри блоков, которые вы могли менять вручную: выполняются один раз,
+// трогают только конкретный слой, остальное в блоке остаётся как есть.
+const PATCHES = [
+  { id: 'cover-simple-mockup', run: patchCoverMockup },
+];
+
+async function patchCoverMockup(existing) {
+  const cover = existing.cover;
+  if (!cover || cover.locked) return '';
+  const mon = cover.findOne(function (n) { return n.name === 'Mockup / Monitor'; });
+  if (!mon) return '';
+  const parent = mon.parent;
+  const idx = parent.children.indexOf(mon);
+  const w = Math.round(mon.width);
+  const h = Math.round(w * 1024 / 1440);
+  const card = await screenCard(parent, { x: mon.x, y: Math.round(mon.y + mon.height - h), w: w, h: h, key: 'landing', radius: 20 });
+  card.name = 'Mockup / Screen';
+  parent.insertChild(idx, card);
+  mon.remove();
+  return 'Обложка: монитор заменён простым экраном.';
+}
+
+async function applyPatches(page, existing) {
+  const raw = page.getPluginData('patches');
+  const done = raw ? JSON.parse(raw) : [];
+  const out = [];
+  for (const p of PATCHES) {
+    if (done.indexOf(p.id) !== -1) continue;
+    const res = await p.run(existing);
+    if (res) out.push(res);
+    done.push(p.id);
+  }
+  page.setPluginData('patches', JSON.stringify(done));
+  return out;
+}
+
 async function main(nested) {
   await Promise.all([
     pickFont('body', [{ family: 'Golos Text', style: 'Regular' }, { family: 'Inter', style: 'Regular' }]),
@@ -853,21 +926,22 @@ async function main(nested) {
     if (id) existing[id] = n;
   });
 
+  // Какие блоки уже собирались: отсутствующий из них удалён вами и не возвращается.
+  // До появления этого списка были собраны все блоки итерации 4.
+  const builtRaw = page.getPluginData('builtBlocks');
+  const builtSet = builtRaw ? JSON.parse(builtRaw) : (Object.keys(existing).length ? BUILT_BEFORE_TRACKING.slice() : []);
+
   let built = 0;
   const skipped = [];
-  const ordered = [];
   for (let i = 0; i < BLOCKS.length; i++) {
     const def = BLOCKS[i];
     const old = existing[def.id];
+    if (!old && builtSet.indexOf(def.id) !== -1) continue;
     if (old && old.locked) {
       skipped.push(def.name);
-      ordered.push(old);
       continue;
     }
-    if (old && blockRev(old) >= def.rev) {
-      ordered.push(old);
-      continue;
-    }
+    if (old && blockRev(old) >= def.rev) continue;
     const b = figma.createFrame();
     b.name = def.name;
     b.resize(W, 100);
@@ -881,17 +955,31 @@ async function main(nested) {
     b.setPluginData('blockId', def.id);
     b.setPluginData('version', VERSION);
     b.setPluginData('rev', String(def.rev));
-    if (old) old.remove();
-    ordered.push(b);
+    if (old) {
+      // на место старого; блоки ниже сдвигаются на разницу высот
+      b.x = old.x;
+      b.y = old.y;
+      shiftBelow(page, old.y + old.height, b.height - old.height, b);
+      old.remove();
+    } else {
+      // после ближайшего предыдущего блока из списка; блоки ниже сдвигаются вниз
+      let anchor = null;
+      for (let k = i - 1; k >= 0 && !anchor; k--) anchor = existing[BLOCKS[k].id] || null;
+      b.x = anchor ? anchor.x : 0;
+      b.y = anchor ? anchor.y + anchor.height : 0;
+      shiftBelow(page, b.y, b.height, b);
+    }
+    existing[def.id] = b;
+    if (builtSet.indexOf(def.id) === -1) builtSet.push(def.id);
     built++;
   }
+  page.setPluginData('builtBlocks', JSON.stringify(builtSet));
 
-  let y = 0;
-  ordered.forEach(function (b) {
-    b.x = 0;
-    b.y = y;
-    y += b.height;
-  });
+  const patched = await applyPatches(page, existing);
+
+  const ordered = page.children
+    .filter(function (n) { return n.getPluginData('blockId'); })
+    .sort(function (a, c) { return a.y - c.y; });
 
   // в live-обновлениях не переключаем страницу и не двигаем экран — вы можете работать в другом месте
   if (!nested) {
@@ -901,9 +989,10 @@ async function main(nested) {
 
   page.setPluginData('lastRun', VERSION + ' · ' + new Date().toISOString());
 
-  let msg = built
+  let msg = built || patched.length
     ? 'Кейс обновлён (' + VERSION + '): пересобрано блоков — ' + built + '.'
     : 'Кейс актуален (' + VERSION + '): изменений нет.';
+  if (patched.length) msg += ' ' + patched.join(' ');
   if (skipped.length) msg += ' Заблокированы и не тронуты: ' + skipped.join(', ') + '.';
   if (missingFonts.length) msg += ' Нет шрифтов: ' + missingFonts.join(', ') + ' — использован запасной.';
 
