@@ -1,7 +1,7 @@
 {
-  "version": "итерация 4.2",
-  "time": "2026-10-26T13:50:05.829Z",
-  "result": "Кейс обновлён (итерация 4.2): пересобрано блоков — 1.",
+  "version": "итерация 5",
+  "time": "2026-10-26T15:47:22.334Z",
+  "result": "Кейс обновлён (итерация 5): пересобрано блоков — 1. Обложка: монитор заменён простым экраном.",
   "blocks": [
     {
       "id": "cover",
@@ -28,17 +28,9 @@
       "rev": 2
     },
     {
-      "id": "numbers",
-      "name": "04 В цифрах",
-      "preview": "previews/04-numbers.png",
-      "height": 610,
-      "locked": false,
-      "rev": 3
-    },
-    {
       "id": "jtbd",
       "name": "05 Что нужно студенту",
-      "preview": "previews/05-jtbd.png",
+      "preview": "previews/04-jtbd.png",
       "height": 777,
       "locked": false,
       "rev": 2
@@ -46,16 +38,24 @@
     {
       "id": "auth",
       "name": "06 Регистрация и вход",
-      "preview": "previews/06-auth.png",
+      "preview": "previews/05-auth.png",
       "height": 820,
       "locked": false,
       "rev": 2
     },
     {
+      "id": "auth2",
+      "name": "06 Регистрация и вход — вариант 2",
+      "preview": "previews/06-auth2.png",
+      "height": 929,
+      "locked": false,
+      "rev": 6
+    },
+    {
       "id": "catalog",
       "name": "07 Каталог и страница курса",
       "preview": "previews/07-catalog.png",
-      "height": 920,
+      "height": 1942,
       "locked": false,
       "rev": 3
     },
@@ -95,22 +95,14 @@
       "id": "landing",
       "name": "12 Лендинг",
       "preview": "previews/12-landing.png",
-      "height": 1377,
+      "height": 2973,
       "locked": false,
       "rev": 4
     },
     {
-      "id": "design",
-      "name": "13 Дизайн-система",
-      "preview": "previews/13-design.png",
-      "height": 888,
-      "locked": false,
-      "rev": 5
-    },
-    {
       "id": "final",
       "name": "14 Финал",
-      "preview": "previews/14-final.png",
+      "preview": "previews/13-final.png",
       "height": 774,
       "locked": false,
       "rev": 4
