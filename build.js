@@ -10,7 +10,7 @@
 // Live-режим: после сборки плагин не закрывается, а каждые 10 секунд проверяет GitHub
 // и сам применяет новую версию build.js (её код выполняется с __nested = true, без своего live-цикла).
 
-const VERSION = 'итерация 6';
+const VERSION = 'итерация 6.1';
 
 const SCREENS = {
   landing: '288:2781',
@@ -904,7 +904,14 @@ async function uploadPreviews(blocks, msg) {
     files.push({ path: path, bytes: bytes });
     list.push({ id: id, name: b.name, preview: path, height: Math.round(b.height), locked: b.locked, rev: blockRev(b), layout: layoutOf(b) });
   }
-  files.push(statusFile({ version: VERSION, time: new Date().toISOString(), result: msg, blocks: list }));
+  const page = blocks.length ? blocks[0].parent : null;
+  let pg = page;
+  while (pg && pg.type !== 'PAGE') pg = pg.parent;
+  const top = pg ? pg.children.map(function (n) {
+    return { name: n.name, type: n.type, x: Math.round(n.x), y: Math.round(n.y), w: Math.round(n.width), h: Math.round(n.height), block: n.getPluginData('blockId') || undefined };
+  }) : [];
+  list.forEach(function (it, k) { it.parent = blocks[k].parent.name; it.parentType = blocks[k].parent.type; });
+  files.push(statusFile({ version: VERSION, time: new Date().toISOString(), result: msg, blocks: list, page: top }));
 
   try {
     const changed = await commitFiles(token, files, 'Previews: ' + VERSION, true);
@@ -941,11 +948,75 @@ function shiftBelow(page, y, delta, except) {
   });
 }
 
+function findBlocks(page) {
+  try {
+    return page.findAllWithCriteria({ types: ['FRAME'], pluginData: { keys: ['blockId'] } });
+  } catch (e) {
+    return page.findAll(function (n) { return n.type === 'FRAME' && !!n.getPluginData('blockId'); });
+  }
+}
+
+function absY(n) {
+  return n.absoluteBoundingBox ? n.absoluteBoundingBox.y : n.y;
+}
+
+function isAuto(parent) {
+  return parent.layoutMode && parent.layoutMode !== 'NONE';
+}
+
+// Сдвигает соседей в контейнере ниже y на delta. На странице — только блоки кейса, внутри секции/фрейма — всё содержимое.
+function shiftSiblings(parent, y, delta, except) {
+  if (!delta || isAuto(parent)) return;
+  const onPage = parent.type === 'PAGE';
+  parent.children.forEach(function (n) {
+    if (n === except || n.y < y - 1) return;
+    if (onPage && !n.getPluginData('blockId')) return;
+    n.y += delta;
+  });
+  if (!onPage && 'resizeWithoutConstraints' in parent) parent.resizeWithoutConstraints(parent.width, parent.height + delta);
+}
+
+// Новый блок встаёт сразу после anchor в том же контейнере.
+function placeAfter(b, anchor) {
+  const parent = anchor.parent;
+  parent.insertChild(parent.children.indexOf(anchor) + 1, b);
+  if (isAuto(parent)) return;
+  b.x = anchor.x;
+  b.y = anchor.y + anchor.height;
+  shiftSiblings(parent, b.y, b.height, b);
+}
+
+// Пересобранный блок встаёт на место старого.
+function replaceBlock(b, old) {
+  const parent = old.parent;
+  parent.insertChild(parent.children.indexOf(old), b);
+  if (!isAuto(parent)) {
+    b.x = old.x;
+    b.y = old.y;
+    shiftSiblings(parent, old.y + old.height, b.height - old.height, b);
+  }
+  old.remove();
+}
+
 // Точечные правки внутри блоков, которые вы могли менять вручную: выполняются один раз,
 // трогают только конкретный слой, остальное в блоке остаётся как есть.
 const PATCHES = [
   { id: 'cover-simple-mockup', run: patchCoverMockup },
+  { id: 'problem-after-about', run: patchProblemPlace },
 ];
+
+// «Проблема» собралась на верхнем уровне страницы, а кейс лежит в контейнере — переносим её после «О проекте».
+async function patchProblemPlace(existing) {
+  const pr = existing.problem;
+  const about = existing.about;
+  if (!pr || !about || pr.locked || pr.parent === about.parent) return '';
+  const page = pr.parent;
+  const oldY = pr.y;
+  const h = pr.height;
+  placeAfter(pr, about);
+  if (page.type === 'PAGE') shiftSiblings(page, oldY + h, -h, null);
+  return '«Проблема» перенесена после «О проекте».';
+}
 
 async function patchCoverMockup(existing) {
   const cover = existing.cover;
@@ -991,11 +1062,9 @@ async function main(nested) {
   const page = await casePage();
   moveLegacy(page);
 
+  // блоки ищутся по всей странице: вы могли сложить их в секцию или фрейм
   const existing = {};
-  page.children.forEach(function (n) {
-    const id = n.getPluginData('blockId');
-    if (id) existing[id] = n;
-  });
+  findBlocks(page).forEach(function (n) { existing[n.getPluginData('blockId')] = n; });
 
   // Какие блоки уже собирались: отсутствующий из них удалён вами и не возвращается.
   // До появления этого списка были собраны все блоки итерации 4.
@@ -1027,18 +1096,17 @@ async function main(nested) {
     b.setPluginData('version', VERSION);
     b.setPluginData('rev', String(def.rev));
     if (old) {
-      // на место старого; блоки ниже сдвигаются на разницу высот
-      b.x = old.x;
-      b.y = old.y;
-      shiftBelow(page, old.y + old.height, b.height - old.height, b);
-      old.remove();
+      replaceBlock(b, old);
     } else {
-      // после ближайшего предыдущего блока из списка; блоки ниже сдвигаются вниз
+      // после ближайшего предыдущего блока из списка, в том же контейнере
       let anchor = null;
       for (let k = i - 1; k >= 0 && !anchor; k--) anchor = existing[BLOCKS[k].id] || null;
-      b.x = anchor ? anchor.x : 0;
-      b.y = anchor ? anchor.y + anchor.height : 0;
-      shiftBelow(page, b.y, b.height, b);
+      if (anchor) placeAfter(b, anchor);
+      else {
+        b.x = 0;
+        b.y = 0;
+        shiftBelow(page, 0, b.height, b);
+      }
     }
     existing[def.id] = b;
     if (builtSet.indexOf(def.id) === -1) builtSet.push(def.id);
@@ -1048,9 +1116,7 @@ async function main(nested) {
 
   const patched = await applyPatches(page, existing);
 
-  const ordered = page.children
-    .filter(function (n) { return n.getPluginData('blockId'); })
-    .sort(function (a, c) { return a.y - c.y; });
+  const ordered = findBlocks(page).sort(function (a, c) { return absY(a) - absY(c); });
 
   // в live-обновлениях не переключаем страницу и не двигаем экран — вы можете работать в другом месте
   if (!nested) {
