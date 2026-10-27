@@ -10,7 +10,7 @@
 // Live-режим: после сборки плагин не закрывается, а каждые 10 секунд проверяет GitHub
 // и сам применяет новую версию build.js (её код выполняется с __nested = true, без своего live-цикла).
 
-const VERSION = 'итерация 7.1';
+const VERSION = 'итерация 7.2';
 
 const SCREENS = {
   landing: '288:2781',
@@ -1005,7 +1005,26 @@ const PATCHES = [
   { id: 'problem-after-about', run: patchProblemPlace },
   { id: 'normalize-5px', run: patchNormalize },
   { id: 'normalize-repair', run: patchNormalizeRepair },
+  { id: 'close-gaps', run: patchCloseGaps },
 ];
+
+// Блоки колонки кейса встают вплотную (закрываются зазоры до 60 px, оставшиеся после выравнивания).
+async function patchCloseGaps(existing) {
+  const blocks = Object.keys(existing).map(function (k) { return existing[k]; });
+  if (!blocks.length) return '';
+  const page = blocks[0].parent;
+  const column = blocks.filter(function (b) { return b.parent === page && Math.abs(b.x) < 10; }).sort(function (a, b) { return a.y - b.y; });
+  let closed = 0;
+  for (let i = 1; i < column.length; i++) {
+    const prev = column[i - 1];
+    const gap = column[i].y - (prev.y + prev.height);
+    if (gap !== 0 && Math.abs(gap) <= 60) {
+      column[i].y = prev.y + prev.height;
+      closed++;
+    }
+  }
+  return closed ? 'Закрыто зазоров между блоками — ' + closed + '.' : '';
+}
 
 // ---------- починка после выравнивания ----------
 
