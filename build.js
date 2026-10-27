@@ -10,7 +10,7 @@
 // Live-режим: после сборки плагин не закрывается, а каждые 10 секунд проверяет GitHub
 // и сам применяет новую версию build.js (её код выполняется с __nested = true, без своего live-цикла).
 
-const VERSION = 'итерация 7';
+const VERSION = 'итерация 7.1';
 
 const SCREENS = {
   landing: '288:2781',
@@ -1004,7 +1004,145 @@ const PATCHES = [
   { id: 'cover-simple-mockup', run: patchCoverMockup },
   { id: 'problem-after-about', run: patchProblemPlace },
   { id: 'normalize-5px', run: patchNormalize },
+  { id: 'normalize-repair', run: patchNormalizeRepair },
 ];
+
+// ---------- починка после выравнивания ----------
+
+function firstSize(t) {
+  if (typeof t.fontSize === 'number') return t.fontSize;
+  const segs = t.getStyledTextSegments(['fontSize']);
+  return segs.length ? segs[0].fontSize : 0;
+}
+
+// Есть ли в поддереве тексты дробного размера (масштабированный фрагмент интерфейса) и «ровные» тексты оформления.
+function textKinds(n, out) {
+  out = out || { frac: false, whole: false };
+  if (n.type === 'TEXT') {
+    const sz = firstSize(n);
+    if (Math.abs(sz - Math.round(sz)) > 0.01) out.frac = true; else out.whole = true;
+  } else if ('children' in n) {
+    n.children.forEach(function (c) { textKinds(c, out); });
+  }
+  return out;
+}
+
+// Фрагменты интерфейса возвращаются из копии «до выравнивания» целиком.
+function restoreFragments(live, backup, depth, screenNames, stats) {
+  if (screenNames[live.name] || /^(Screen|Mockup)/.test(live.name)) return;
+  const kinds = textKinds(backup);
+  if (depth >= 2 && kinds.frac && !kinds.whole && live.type !== 'TEXT') {
+    const parent = live.parent;
+    const c = backup.clone();
+    parent.insertChild(parent.children.indexOf(live), c);
+    if (!isAuto(parent)) {
+      c.x = r5(backup.x);
+      c.y = r5(backup.y);
+    }
+    live.remove();
+    stats.restored++;
+    return;
+  }
+  if (!('children' in live) || !('children' in backup) || live.children.length !== backup.children.length) return;
+  const lk = live.children.slice();
+  for (let i = 0; i < lk.length; i++) restoreFragments(lk[i], backup.children[i], depth + 1, screenNames, stats);
+}
+
+// Тексты в одной колонке не должны наезжать друг на друга; карточки подрастают, ряд выравнивается, всё ниже сдвигается.
+function repairStacks(n, screenNames, grown) {
+  if (screenNames[n.name] || /^(Screen|Mockup)/.test(n.name) || !('children' in n)) return;
+  n.children.slice().forEach(function (c) { repairStacks(c, screenNames, grown); });
+  if (n.type === 'PAGE' || isAuto(n)) return;
+
+  const cols = {};
+  n.children.forEach(function (c) {
+    if (c.type !== 'TEXT') return;
+    const k = Math.round(c.x / 10);
+    (cols[k] = cols[k] || []).push(c);
+  });
+  Object.keys(cols).forEach(function (k) {
+    const col = cols[k].sort(function (a, b) { return a.y - b.y; });
+    for (let i = 1; i < col.length; i++) {
+      const prev = col[i - 1];
+      if (col[i].y < prev.y + prev.height + 5) col[i].y = r5(prev.y + prev.height + 10);
+    }
+  });
+
+  // ряды одинаковых дочерних карточек, которые выросли
+  const rows = {};
+  n.children.forEach(function (c) {
+    if (!grown.has(c)) return;
+    const k = Math.round(c.y) + '|' + Math.round(c.width);
+    (rows[k] = rows[k] || []).push(c);
+  });
+  Object.keys(rows).forEach(function (k) {
+    const first = rows[k][0];
+    const row = n.children.filter(function (c) { return Math.abs(c.y - first.y) < 3 && Math.abs(c.width - first.width) < 3 && c.type !== 'TEXT'; });
+    let oldBottom = 0;
+    let maxH = 0;
+    row.forEach(function (c) { oldBottom = Math.max(oldBottom, c.y + (grown.get(c) || c.height)); maxH = Math.max(maxH, c.height); });
+    row.forEach(function (c) { if (c.height < maxH) c.resizeWithoutConstraints(c.width, maxH); });
+    const delta = first.y + maxH - oldBottom;
+    if (delta > 0) {
+      n.children.forEach(function (c) { if (row.indexOf(c) === -1 && c.y >= oldBottom - 1) c.y += delta; });
+    }
+  });
+
+  // сама карточка/панель: содержимое не должно вылезать за нижний край
+  if (n.type === 'FRAME' && n.fills && n.fills.length && n.parent && n.parent.type !== 'PAGE') {
+    let bottom = 0;
+    n.children.forEach(function (c) { if (c.type === 'TEXT') bottom = Math.max(bottom, c.y + c.height); });
+    if (bottom + 20 > n.height) {
+      grown.set(n, n.height);
+      n.resizeWithoutConstraints(n.width, r5(bottom + 30));
+    }
+  }
+}
+
+async function patchNormalizeRepair(existing) {
+  const blocks = Object.keys(existing).map(function (k) { return existing[k]; }).filter(function (b) { return !b.locked; });
+  if (!blocks.length) return '';
+  let page = blocks[0].parent;
+  while (page.type !== 'PAGE') page = page.parent;
+  const backupPage = figma.root.children.filter(function (p) { return p.name === CASE_PAGE + ' — до выравнивания'; })[0];
+
+  const screenNames = {};
+  for (const k of Object.keys(SCREENS)) {
+    const src = await figma.getNodeByIdAsync(SCREENS[k]);
+    if (src) screenNames[src.name] = true;
+  }
+
+  const stats = { restored: 0 };
+  if (backupPage) {
+    await backupPage.loadAsync();
+    const pool = backupPage.children.slice();
+    for (const b of blocks) {
+      const i = pool.findIndex(function (c) { return c.name === b.name && Math.abs(c.width - b.width) < 1; });
+      if (i === -1) continue;
+      const bk = pool.splice(i, 1)[0];
+      if (b.children.length !== bk.children.length) continue;
+      const lk = b.children.slice();
+      for (let j = 0; j < lk.length; j++) restoreFragments(lk[j], bk.children[j], 1, screenNames, stats);
+    }
+  }
+
+  const grown = new Map();
+  for (const b of blocks) {
+    const before = b.height;
+    repairStacks(b, screenNames, grown);
+    let bottom = 0;
+    b.children.forEach(function (c) { bottom = Math.max(bottom, c.y + c.height); });
+    if (bottom + 20 > b.height) b.resizeWithoutConstraints(W, r5(bottom + 20));
+    if (b.height !== before) stats.grew = (stats.grew || 0) + 1;
+  }
+
+  const column = blocks.filter(function (b) { return b.parent === page; }).sort(function (a, b) { return a.y - b.y; });
+  for (let i = 1; i < column.length; i++) {
+    const prev = column[i - 1];
+    if (Math.abs(column[i].x - prev.x) < 10 && column[i].y - (prev.y + prev.height) <= 10) column[i].y = prev.y + prev.height;
+  }
+  return 'Починка: возвращено фрагментов интерфейса — ' + stats.restored + ', подросло блоков — ' + (stats.grew || 0) + '.';
+}
 
 // ---------- выравнивание по системе: шрифты по шкале, отступы кратно 5 ----------
 
