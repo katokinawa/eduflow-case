@@ -10,7 +10,7 @@
 // Live-режим: после сборки плагин не закрывается, а каждые 10 секунд проверяет GitHub
 // и сам применяет новую версию build.js (её код выполняется с __nested = true, без своего live-цикла).
 
-const VERSION = 'итерация 6.1';
+const VERSION = 'итерация 7';
 
 const SCREENS = {
   landing: '288:2781',
@@ -911,7 +911,7 @@ async function uploadPreviews(blocks, msg) {
     return { name: n.name, type: n.type, x: Math.round(n.x), y: Math.round(n.y), w: Math.round(n.width), h: Math.round(n.height), block: n.getPluginData('blockId') || undefined };
   }) : [];
   list.forEach(function (it, k) { it.parent = blocks[k].parent.name; it.parentType = blocks[k].parent.type; });
-  files.push(statusFile({ version: VERSION, time: new Date().toISOString(), result: msg, blocks: list, page: top }));
+  files.push(statusFile({ version: VERSION, time: new Date().toISOString(), result: msg, blocks: list, page: top, normalize: normalizeReport }));
 
   try {
     const changed = await commitFiles(token, files, 'Previews: ' + VERSION, true);
@@ -1003,7 +1003,186 @@ function replaceBlock(b, old) {
 const PATCHES = [
   { id: 'cover-simple-mockup', run: patchCoverMockup },
   { id: 'problem-after-about', run: patchProblemPlace },
+  { id: 'normalize-5px', run: patchNormalize },
 ];
+
+// ---------- выравнивание по системе: шрифты по шкале, отступы кратно 5 ----------
+
+const TYPE_SCALE = [15, 20, 25, 30, 40, 60, 90, 120];
+const UNIT = 5;
+
+function r5(v) { return Math.round(v / UNIT) * UNIT; }
+
+function scaleSize(s) {
+  if (s >= 150) return s; // логотипы и надписи, вписанные по ширине
+  let best = TYPE_SCALE[0];
+  TYPE_SCALE.forEach(function (v) { if (Math.abs(v - s) < Math.abs(best - s)) best = v; });
+  return best;
+}
+
+// Заголовки, собранные запасными шрифтами, возвращаются к фирменным.
+function brandFont(f) {
+  const heavy = /Medium|Semi ?Bold|Bold/i.test(f.style);
+  if ((f.family === 'Golos Text' && heavy) || (f.family === 'Inter' && heavy)) {
+    return { family: 'PP Neue Montreal', style: /Bold/i.test(f.style) && !/Semi/i.test(f.style) ? 'Bold' : 'Medium' };
+  }
+  if (f.family === 'Inter') return { family: 'Golos Text', style: 'Regular' };
+  return f;
+}
+
+const loadedFonts = {};
+async function ensureFont(f) {
+  const k = f.family + '|' + f.style;
+  if (!(k in loadedFonts)) {
+    try { await figma.loadFontAsync(f); loadedFonts[k] = true; } catch (e) { loadedFonts[k] = false; }
+  }
+  return loadedFonts[k];
+}
+
+async function normalizeText(t, stats) {
+  if (t.name === 'Wordmark') return;
+  const segs = t.getStyledTextSegments(['fontSize', 'fontName', 'lineHeight']);
+  for (const sg of segs) {
+    if (!(await ensureFont(sg.fontName))) return;
+  }
+  for (const sg of segs) {
+    let nf = brandFont(sg.fontName);
+    if (!(await ensureFont(nf))) nf = sg.fontName;
+    const size = scaleSize(sg.fontSize);
+    if (nf.family !== sg.fontName.family || nf.style !== sg.fontName.style) {
+      t.setRangeFontName(sg.start, sg.end, nf);
+      stats.fonts++;
+    }
+    if (size !== sg.fontSize) {
+      t.setRangeFontSize(sg.start, sg.end, size);
+      const k = sg.fontSize + '→' + size;
+      stats.sizes[k] = (stats.sizes[k] || 0) + 1;
+    }
+    const lh = sg.lineHeight;
+    if (lh && lh.unit === 'PERCENT') t.setRangeLineHeight(sg.start, sg.end, { value: Math.max(UNIT, r5(size * lh.value / 100)), unit: 'PIXELS' });
+    else if (lh && lh.unit === 'PIXELS') t.setRangeLineHeight(sg.start, sg.end, { value: Math.max(UNIT, r5(lh.value)), unit: 'PIXELS' });
+  }
+}
+
+function snapBox(n, resize) {
+  const parent = n.parent;
+  if (parent && !isAuto(parent) && !n.rotation) {
+    n.x = r5(n.x);
+    n.y = r5(n.y);
+  }
+  if (!resize || n.rotation || !('resize' in n)) return;
+  const w = Math.max(UNIT, r5(n.width));
+  const h = Math.max(UNIT, r5(n.height));
+  if (n.type === 'TEXT') {
+    if (n.textAutoResize === 'HEIGHT') n.resize(w, n.height);
+    else if (n.textAutoResize === 'NONE') n.resize(w, h);
+    return;
+  }
+  if (n.type === 'FRAME' && isAuto(n)) return; // размер задаёт автолейаут
+  if (w !== n.width || h !== n.height) {
+    if ('resizeWithoutConstraints' in n) n.resizeWithoutConstraints(w, h);
+    else n.resize(w, h);
+  }
+}
+
+function snapRadius(n) {
+  if (!('cornerRadius' in n) || typeof n.cornerRadius !== 'number' || n.cornerRadius <= 0) return;
+  n.cornerRadius = Math.max(UNIT, r5(n.cornerRadius));
+}
+
+// Ряды одинаковых карточек: одинаковый шаг, если промежутки и так были почти равны.
+function distributeRows(parent) {
+  if (isAuto(parent) || !('children' in parent)) return;
+  const groups = {};
+  parent.children.forEach(function (c) {
+    if (c.type === 'TEXT' || c.rotation) return;
+    const k = Math.round(c.width) + 'x' + Math.round(c.height);
+    (groups[k] = groups[k] || []).push(c);
+  });
+  Object.keys(groups).forEach(function (k) {
+    const g = groups[k].slice().sort(function (a, b) { return a.x - b.x; });
+    if (g.length < 3 && !(g.length === 2 && Math.abs(g[0].y - g[1].y) < 3)) return;
+    const gaps = [];
+    for (let i = 1; i < g.length; i++) gaps.push(g[i].x - g[i - 1].x - g[i - 1].width);
+    const avg = gaps.reduce(function (a, b) { return a + b; }, 0) / gaps.length;
+    if (avg < 0 || gaps.some(function (v) { return Math.abs(v - avg) > 4; })) return;
+    const step = r5(g[0].width) + r5(avg);
+    const x0 = r5(g[0].x);
+    g.forEach(function (c, i) { c.x = x0 + i * step; });
+  });
+}
+
+async function normalizeNode(n, screenNames, stats) {
+  const isScreen = screenNames[n.name] || /^(Screen|Mockup)/.test(n.name) || n.type === 'INSTANCE';
+  if (isScreen) {
+    // экран-скриншот: двигаем целиком, внутрь не заходим
+    snapBox(n, false);
+    snapRadius(n);
+    return;
+  }
+  if (n.type === 'TEXT') {
+    await normalizeText(n, stats);
+    snapBox(n, true);
+    stats.texts++;
+    return;
+  }
+  if ('children' in n) {
+    for (const c of n.children.slice()) await normalizeNode(c, screenNames, stats);
+    distributeRows(n);
+  }
+  if (n.type === 'FRAME' && isAuto(n)) {
+    ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom', 'itemSpacing'].forEach(function (k) { n[k] = r5(n[k]); });
+  }
+  snapRadius(n);
+  snapBox(n, n.type !== 'VECTOR' && n.type !== 'BOOLEAN_OPERATION' && n.type !== 'GROUP' && n.type !== 'LINE');
+}
+
+async function patchNormalize(existing) {
+  const blocks = Object.keys(existing).map(function (k) { return existing[k]; }).filter(function (b) { return !b.locked; });
+  if (!blocks.length) return '';
+  let page = blocks[0].parent;
+  while (page.type !== 'PAGE') page = page.parent;
+
+  // резервная копия: отдельная страница с копиями блоков, без меток плагина
+  const backup = figma.createPage();
+  backup.name = CASE_PAGE + ' — до выравнивания';
+  for (const b of blocks) {
+    const c = b.clone();
+    backup.appendChild(c);
+    c.x = b.absoluteBoundingBox ? b.absoluteBoundingBox.x : b.x;
+    c.y = b.absoluteBoundingBox ? b.absoluteBoundingBox.y : b.y;
+    c.setPluginData('blockId', '');
+  }
+
+  const screenNames = {};
+  for (const k of Object.keys(SCREENS)) {
+    const src = await figma.getNodeByIdAsync(SCREENS[k]);
+    if (src) screenNames[src.name] = true;
+  }
+
+  const stats = { texts: 0, fonts: 0, sizes: {} };
+  for (const b of blocks) {
+    for (const c of b.children.slice()) await normalizeNode(c, screenNames, stats);
+    distributeRows(b);
+    b.resizeWithoutConstraints(W, r5(b.height));
+  }
+
+  // блоки колонки кейса — вплотную, без зазоров в несколько пикселей
+  const column = blocks.filter(function (b) { return b.parent === page; }).sort(function (a, b) { return a.y - b.y; });
+  for (let i = 1; i < column.length; i++) {
+    const prev = column[i - 1];
+    const gap = column[i].y - (prev.y + prev.height);
+    if (Math.abs(column[i].x - prev.x) < 10 && Math.abs(gap) <= 10) column[i].y = prev.y + prev.height;
+  }
+  if (column.length) column[0].y = r5(column[0].y);
+
+  normalizeReport = stats;
+  const changed = Object.keys(stats.sizes).map(function (k) { return k + ' ×' + stats.sizes[k]; }).join(', ');
+  return 'Выравнивание: текстов ' + stats.texts + ', заменено шрифтов ' + stats.fonts + (changed ? ', размеры ' + changed : '') +
+    '. Копия до выравнивания — на странице «' + backup.name + '».';
+}
+
+let normalizeReport = null;
 
 // «Проблема» собралась на верхнем уровне страницы, а кейс лежит в контейнере — переносим её после «О проекте».
 async function patchProblemPlace(existing) {
