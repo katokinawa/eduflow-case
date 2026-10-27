@@ -1,111 +1,276 @@
 {
-  "version": "итерация 5",
-  "time": "2026-10-26T15:47:22.334Z",
-  "result": "Кейс обновлён (итерация 5): пересобрано блоков — 1. Обложка: монитор заменён простым экраном.",
+  "version": "итерация 6",
+  "time": "2026-10-27T12:02:47.746Z",
+  "result": "Кейс обновлён (итерация 6): пересобрано блоков — 1.",
   "blocks": [
     {
-      "id": "cover",
-      "name": "01 Обложка",
-      "preview": "previews/01-cover.png",
-      "height": 1378,
+      "id": "problem",
+      "name": "02.1 Проблема",
+      "preview": "previews/01-problem.png",
+      "height": 1097,
       "locked": false,
-      "rev": 2
-    },
-    {
-      "id": "about",
-      "name": "02 О проекте",
-      "preview": "previews/02-about.png",
-      "height": 923,
-      "locked": false,
-      "rev": 2
-    },
-    {
-      "id": "goals",
-      "name": "03 Подход",
-      "preview": "previews/03-goals.png",
-      "height": 826,
-      "locked": false,
-      "rev": 2
-    },
-    {
-      "id": "jtbd",
-      "name": "05 Что нужно студенту",
-      "preview": "previews/04-jtbd.png",
-      "height": 777,
-      "locked": false,
-      "rev": 2
+      "rev": 7,
+      "layout": [
+        {
+          "name": "Problem",
+          "type": "FRAME",
+          "x": 40,
+          "y": 20,
+          "w": 1840,
+          "h": 1057,
+          "children": [
+            {
+              "name": "Label",
+              "type": "TEXT",
+              "x": 64,
+              "y": 56,
+              "w": 112,
+              "h": 29,
+              "text": "Проблема"
+            },
+            {
+              "name": "Headline",
+              "type": "TEXT",
+              "x": 64,
+              "y": 120,
+              "w": 900,
+              "h": 189,
+              "text": "Учёба разбросана по пяти сервисам, а нужная ссылка всегда в "
+            },
+            {
+              "name": "Chip / Платформа курса",
+              "type": "FRAME",
+              "x": 1100,
+              "y": 104,
+              "w": 224,
+              "h": 49
+            },
+            {
+              "name": "Chip / Zoom",
+              "type": "FRAME",
+              "x": 1336,
+              "y": 104,
+              "w": 103,
+              "h": 49
+            },
+            {
+              "name": "Chip / Telegram",
+              "type": "FRAME",
+              "x": 1451,
+              "y": 104,
+              "w": 136,
+              "h": 49
+            },
+            {
+              "name": "Chip / Google Календарь",
+              "type": "FRAME",
+              "x": 1164,
+              "y": 168,
+              "w": 231,
+              "h": 49
+            },
+            {
+              "name": "Chip / Google Диск",
+              "type": "FRAME",
+              "x": 1407,
+              "y": 168,
+              "w": 173,
+              "h": 49
+            },
+            {
+              "name": "Chip / Почта",
+              "type": "FRAME",
+              "x": 1124,
+              "y": 232,
+              "w": 108,
+              "h": 49
+            },
+            {
+              "name": "Chip / Notion",
+              "type": "FRAME",
+              "x": 1244,
+              "y": 232,
+              "w": 111,
+              "h": 49
+            },
+            {
+              "name": "Chip / Личные сообщения",
+              "type": "FRAME",
+              "x": 1367,
+              "y": 232,
+              "w": 242,
+              "h": 49
+            },
+            {
+              "name": "Chip / →  EduFlow: всё в одном кабинете",
+              "type": "FRAME",
+              "x": 1140,
+              "y": 312,
+              "w": 384,
+              "h": 49
+            },
+            {
+              "name": "Pain / Разные точки касания",
+              "type": "FRAME",
+              "x": 64,
+              "y": 433,
+              "w": 410,
+              "h": 250
+            },
+            {
+              "name": "Pain / Ссылки теряются",
+              "type": "FRAME",
+              "x": 498,
+              "y": 433,
+              "w": 410,
+              "h": 250
+            },
+            {
+              "name": "Pain / Дедлайны вне поля зрения",
+              "type": "FRAME",
+              "x": 932,
+              "y": 433,
+              "w": 410,
+              "h": 250
+            },
+            {
+              "name": "Pain / Ответ наставника теряется",
+              "type": "FRAME",
+              "x": 1366,
+              "y": 433,
+              "w": 410,
+              "h": 250
+            },
+            {
+              "name": "Stat",
+              "type": "TEXT",
+              "x": 64,
+              "y": 747,
+              "w": 178,
+              "h": 88,
+              "text": "28%"
+            },
+            {
+              "name": "онлайн-школ, где до конца курса доходят 70% студентов и больше",
+              "type": "TEXT",
+              "x": 64,
+              "y": 847,
+              "w": 515,
+              "h": 56,
+              "text": "онлайн-школ, где до конца курса доходят 70% студентов и боль"
+            },
+            {
+              "name": "Stat",
+              "type": "TEXT",
+              "x": 643,
+              "y": 747,
+              "w": 157,
+              "h": 88,
+              "text": "61%"
+            },
+            {
+              "name": "студентов совмещают учёбу с работой — времени на поиски нет",
+              "type": "TEXT",
+              "x": 643,
+              "y": 847,
+              "w": 515,
+              "h": 56,
+              "text": "студентов совмещают учёбу с работой — времени на поиски нет"
+            },
+            {
+              "name": "Stat",
+              "type": "TEXT",
+              "x": 1221,
+              "y": 747,
+              "w": 208,
+              "h": 88,
+              "text": "8 616"
+            },
+            {
+              "name": "студентов в исследовании: чем больше платформ, тем выше когнитивная нагрузка и усталость",
+              "type": "TEXT",
+              "x": 1221,
+              "y": 847,
+              "w": 515,
+              "h": 56,
+              "text": "студентов в исследовании: чем больше платформ, тем выше когн"
+            },
+            {
+              "name": "Sources",
+              "type": "TEXT",
+              "x": 64,
+              "y": 971,
+              "w": 1712,
+              "h": 22,
+              "text": "Источники: исследование доходимости онлайн-школ, 2020 (Хабр "
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "auth",
       "name": "06 Регистрация и вход",
-      "preview": "previews/05-auth.png",
+      "preview": "previews/02-auth.png",
       "height": 820,
       "locked": false,
-      "rev": 2
-    },
-    {
-      "id": "auth2",
-      "name": "06 Регистрация и вход — вариант 2",
-      "preview": "previews/06-auth2.png",
-      "height": 929,
-      "locked": false,
-      "rev": 6
-    },
-    {
-      "id": "catalog",
-      "name": "07 Каталог и страница курса",
-      "preview": "previews/07-catalog.png",
-      "height": 1942,
-      "locked": false,
-      "rev": 3
-    },
-    {
-      "id": "progress",
-      "name": "08 Мои курсы и прогресс",
-      "preview": "previews/08-progress.png",
-      "height": 973,
-      "locked": false,
-      "rev": 3
-    },
-    {
-      "id": "lesson",
-      "name": "09 Урок",
-      "preview": "previews/09-lesson.png",
-      "height": 1020,
-      "locked": false,
-      "rev": 3
-    },
-    {
-      "id": "chat",
-      "name": "10 Чат, профиль и календарь",
-      "preview": "previews/10-chat.png",
-      "height": 940,
-      "locked": false,
-      "rev": 3
-    },
-    {
-      "id": "certificate",
-      "name": "11 Сертификат",
-      "preview": "previews/11-certificate.png",
-      "height": 786,
-      "locked": false,
-      "rev": 4
-    },
-    {
-      "id": "landing",
-      "name": "12 Лендинг",
-      "preview": "previews/12-landing.png",
-      "height": 2973,
-      "locked": false,
-      "rev": 4
-    },
-    {
-      "id": "final",
-      "name": "14 Финал",
-      "preview": "previews/13-final.png",
-      "height": 774,
-      "locked": false,
-      "rev": 4
+      "rev": 2,
+      "layout": [
+        {
+          "name": "Auth / Регистрация",
+          "type": "FRAME",
+          "x": 40,
+          "y": 20,
+          "w": 900,
+          "h": 760,
+          "children": [
+            {
+              "name": "Label",
+              "type": "TEXT",
+              "x": 64,
+              "y": 56,
+              "w": 183,
+              "h": 29,
+              "text": "01 / Регистрация"
+            },
+            {
+              "name": "Mockup / Browser",
+              "type": "FRAME",
+              "x": 64,
+              "y": 136,
+              "w": 1000,
+              "h": 745
+            }
+          ]
+        },
+        {
+          "name": "Auth / Вход",
+          "type": "FRAME",
+          "x": 980,
+          "y": 20,
+          "w": 900,
+          "h": 760,
+          "children": [
+            {
+              "name": "Label",
+              "type": "TEXT",
+              "x": 64,
+              "y": 56,
+              "w": 102,
+              "h": 29,
+              "text": "02 / Вход"
+            },
+            {
+              "name": "Mockup / Browser",
+              "type": "FRAME",
+              "x": 64,
+              "y": 136,
+              "w": 1000,
+              "h": 745
+            }
+          ]
+        }
+      ]
     }
   ]
 }
