@@ -10,7 +10,7 @@
 // Live-режим: после сборки плагин не закрывается, а каждые 10 секунд проверяет GitHub
 // и сам применяет новую версию build.js (её код выполняется с __nested = true, без своего live-цикла).
 
-const VERSION = 'итерация 5';
+const VERSION = 'итерация 6';
 
 const SCREENS = {
   landing: '288:2781',
@@ -633,6 +633,62 @@ async function blockFinal(b) {
   fitHeight(p, IN - 20);
 }
 
+// Проблема: разрозненные сервисы, потерянные ссылки и дедлайны. Цифры — из открытых исследований (источники внизу блока).
+async function blockProblem(b) {
+  const p = panel(b, 'full', 1000, C.olive, 'Problem');
+  text(p, 'Проблема', { x: IN, y: IN - 8, size: 24, font: 'head', color: C.light, name: 'Label' });
+  const head = text2(p, 'Учёба разбросана по пяти сервисам, ', 'а нужная ссылка всегда в другом чате', {
+    x: IN, y: IN + 56, size: 56, font: 'head', color: C.white, color2: C.sage, lh: 112, width: 900, name: 'Headline',
+  });
+
+  // облако сервисов, между которыми прыгает студент
+  const cx = 1100;
+  const rows = [['Платформа курса', 'Zoom', 'Telegram'], ['Google Календарь', 'Google Диск'], ['Почта', 'Notion', 'Личные сообщения']];
+  rows.forEach(function (r, k) {
+    chipRow(p, r, { x: cx + [0, 64, 24][k], y: IN + 40 + k * 64, color: C.light, stroke: C.mid });
+  });
+  const one = chip(p, '→  EduFlow: всё в одном кабинете', { x: cx + 40, y: IN + 40 + 3 * 64 + 16, color: C.olive, bg: C.yellow, stroke: C.yellow });
+
+  const top = Math.max(head.y + head.height, one.y + one.height) + 72;
+  const pains = [
+    ['Разные точки касания', 'Уроки на платформе, вебинары в Zoom, общение в Telegram, расписание — в своём календаре.'],
+    ['Ссылки теряются', 'Ссылка на вебинар, файл с домашкой и контакт куратора тонут в ленте общего чата.'],
+    ['Дедлайны вне поля зрения', 'Сроков не видно рядом с уроком, а большинство студентов совмещают учёбу с работой.'],
+    ['Ответ наставника теряется', 'Вопрос уходит в личные сообщения, а задержки проверки домашки — частая жалоба в отзывах.'],
+  ];
+  const g = 24;
+  const cw = (CW - IN * 2 - g * 3) / 4;
+  const cards = [];
+  pains.forEach(function (pn, k) {
+    const c = frame(p, { name: 'Pain / ' + pn[0], x: IN + k * (cw + g), y: top, w: cw, h: 300, color: C.oliveCard, radius: 28 });
+    text(c, '0' + (k + 1), { x: 28, y: 24, size: 22, font: 'head', color: C.yellow });
+    const t = text(c, pn[0], { x: 28, y: 64, size: 28, font: 'head', color: C.white, lh: 115, width: cw - 56 });
+    text(c, pn[1], { x: 28, y: t.y + t.height + 14, size: 20, color: C.sage, lh: 140, width: cw - 56 });
+    cards.push(c);
+  });
+  let ch = 0;
+  cards.forEach(function (c) { fitHeight(c, 28); ch = Math.max(ch, c.height); });
+  cards.forEach(function (c) { c.resize(cw, ch); });
+
+  // цифры из исследований
+  const sy = top + ch + 64;
+  const stats = [
+    ['28%', 'онлайн-школ, где до конца курса доходят 70% студентов и больше'],
+    ['61%', 'студентов совмещают учёбу с работой — времени на поиски нет'],
+    ['8 616', 'студентов в исследовании: чем больше платформ, тем выше когнитивная нагрузка и усталость'],
+  ];
+  const sw = (CW - IN * 2 - g * 2) / 3;
+  stats.forEach(function (st, k) {
+    const x = IN + k * (sw + g);
+    const n = text(p, st[0], { x: x, y: sy, size: 88, font: 'head', color: C.yellow, lh: 100, name: 'Stat' });
+    text(p, st[1], { x: x, y: sy + n.height + 12, size: 20, color: C.sage, lh: 140, width: sw - 40 });
+  });
+  const lastBottom = sy + 88 + 12 + 3 * 28;
+  text(p, 'Источники: исследование доходимости онлайн-школ, 2020 (Хабр / SkillFactory); опрос студентов «Нетологии», 2024; ' +
+    'Cognitive load in multi-platform online learning, PLOS ONE.', { x: IN, y: lastBottom + 40, size: 16, color: C.mid, lh: 140, width: CW - IN * 2, name: 'Sources' });
+  fitHeight(p, IN);
+}
+
 // Регистрация и вход, вариант 2: общий шаблон показан один раз (иллюстрация), рядом — обе формы крупно.
 async function blockAuth2(b) {
   const p = panel(b, 'full', 900, C.light, 'Auth v2');
@@ -652,6 +708,7 @@ async function blockAuth2(b) {
 const BLOCKS = [
   { id: 'cover', rev: 2, name: '01 Обложка', build: blockCover },
   { id: 'about', rev: 2, name: '02 О проекте', build: blockAbout },
+  { id: 'problem', rev: 7, name: '02.1 Проблема', build: blockProblem },
   { id: 'goals', rev: 2, name: '03 Подход', build: blockApproach },
   { id: 'numbers', rev: 3, name: '04 В цифрах', build: blockNumbers },
   { id: 'jtbd', rev: 2, name: '05 Что нужно студенту', build: blockJtbd },
@@ -815,6 +872,20 @@ async function commitFiles(token, files, message, prune) {
   return true;
 }
 
+// Раскладка блока для ревью: панели и их прямые дети (тексты — с началом строки).
+function layoutOf(b) {
+  function box(n) {
+    const o = { name: n.name, type: n.type, x: Math.round(n.x), y: Math.round(n.y), w: Math.round(n.width), h: Math.round(n.height) };
+    if (n.type === 'TEXT') o.text = n.characters.slice(0, 60);
+    return o;
+  }
+  return b.children.map(function (pn) {
+    const o = box(pn);
+    if ('children' in pn) o.children = pn.children.map(box);
+    return o;
+  });
+}
+
 function statusFile(status) {
   return { path: 'status.json', bytes: utf8Bytes(JSON.stringify(status, null, 2)) };
 }
@@ -831,7 +902,7 @@ async function uploadPreviews(blocks, msg) {
     const path = 'previews/' + String(i + 1).padStart(2, '0') + '-' + id + '.png';
     const bytes = await b.exportAsync({ format: 'PNG', constraint: { type: 'SCALE', value: 0.5 } });
     files.push({ path: path, bytes: bytes });
-    list.push({ id: id, name: b.name, preview: path, height: Math.round(b.height), locked: b.locked, rev: blockRev(b) });
+    list.push({ id: id, name: b.name, preview: path, height: Math.round(b.height), locked: b.locked, rev: blockRev(b), layout: layoutOf(b) });
   }
   files.push(statusFile({ version: VERSION, time: new Date().toISOString(), result: msg, blocks: list }));
 
