@@ -1,12 +1,172 @@
 {
-  "version": "итерация 6",
-  "time": "2026-10-27T12:02:47.746Z",
-  "result": "Кейс обновлён (итерация 6): пересобрано блоков — 1.",
+  "version": "итерация 6.1",
+  "time": "2026-10-27T14:02:24.298Z",
+  "result": "Кейс актуален (итерация 6.1): изменений нет.",
   "blocks": [
+    {
+      "id": "cover",
+      "name": "01 Обложка",
+      "preview": "previews/01-cover.png",
+      "height": 1378,
+      "locked": false,
+      "rev": 2,
+      "layout": [
+        {
+          "name": "Cover",
+          "type": "FRAME",
+          "x": 40,
+          "y": 40,
+          "w": 1840,
+          "h": 1318,
+          "children": [
+            {
+              "name": "Chip / Концептуальный проект",
+              "type": "FRAME",
+              "x": 64,
+              "y": 64,
+              "w": 290,
+              "h": 49
+            },
+            {
+              "name": "Chip / EdTech",
+              "type": "FRAME",
+              "x": 366,
+              "y": 64,
+              "w": 120,
+              "h": 49
+            },
+            {
+              "name": "Chip / UX/UI",
+              "type": "FRAME",
+              "x": 498,
+              "y": 64,
+              "w": 106,
+              "h": 49
+            },
+            {
+              "name": "Chip / Web",
+              "type": "FRAME",
+              "x": 616,
+              "y": 64,
+              "w": 92,
+              "h": 49
+            },
+            {
+              "name": "Chip / 2025",
+              "type": "FRAME",
+              "x": 1677,
+              "y": 64,
+              "w": 99,
+              "h": 49
+            },
+            {
+              "name": "Wordmark",
+              "type": "TEXT",
+              "x": 66,
+              "y": 150,
+              "w": 1708,
+              "h": 346,
+              "text": "EDUFLOW"
+            },
+            {
+              "name": "Mockup / Laptop",
+              "type": "FRAME",
+              "x": 298,
+              "y": 337,
+              "w": 1245,
+              "h": 823
+            },
+            {
+              "name": "Subtitle",
+              "type": "TEXT",
+              "x": 64,
+              "y": 1178,
+              "w": 296,
+              "h": 76,
+              "text": "Онлайн-школа\nIT-профессий"
+            },
+            {
+              "name": "Subtitle",
+              "type": "TEXT",
+              "x": 1480,
+              "y": 1216,
+              "w": 296,
+              "h": 38,
+              "text": "Eduflow"
+            }
+          ]
+        }
+      ],
+      "parent": "Frame 279",
+      "parentType": "FRAME"
+    },
+    {
+      "id": "about",
+      "name": "02 О проекте",
+      "preview": "previews/02-about.png",
+      "height": 923,
+      "locked": false,
+      "rev": 2,
+      "layout": [
+        {
+          "name": "About",
+          "type": "FRAME",
+          "x": 40,
+          "y": 20,
+          "w": 1840,
+          "h": 883,
+          "children": [
+            {
+              "name": "Chip / О проекте",
+              "type": "FRAME",
+              "x": 64,
+              "y": 64,
+              "w": 151,
+              "h": 49
+            },
+            {
+              "name": "Headline",
+              "type": "TEXT",
+              "x": 64,
+              "y": 153,
+              "w": 780,
+              "h": 198,
+              "text": "Онлайн-школа IT-профессий, где всё нужное — под рукой студен"
+            },
+            {
+              "name": "Frame 278",
+              "type": "FRAME",
+              "x": 64,
+              "y": 586,
+              "w": 640,
+              "h": 233
+            },
+            {
+              "name": "Screen / catalog",
+              "type": "FRAME",
+              "x": 936,
+              "y": 84,
+              "w": 640,
+              "h": 455
+            },
+            {
+              "name": "Screen / lesson",
+              "type": "FRAME",
+              "x": 1136,
+              "y": 334,
+              "w": 640,
+              "h": 455
+            }
+          ]
+        }
+      ],
+      "parent": "Frame 279",
+      "parentType": "FRAME"
+    },
     {
       "id": "problem",
       "name": "02.1 Проблема",
-      "preview": "previews/01-problem.png",
+      "preview": "previews/03-problem.png",
       "height": 1097,
       "locked": false,
       "rev": 7,
@@ -20,94 +180,29 @@
           "h": 1057,
           "children": [
             {
-              "name": "Label",
-              "type": "TEXT",
+              "name": "Chip / Концептуальный проект",
+              "type": "FRAME",
               "x": 64,
               "y": 56,
-              "w": 112,
-              "h": 29,
-              "text": "Проблема"
+              "w": 150,
+              "h": 49
             },
             {
               "name": "Headline",
               "type": "TEXT",
               "x": 64,
-              "y": 120,
+              "y": 145,
               "w": 900,
               "h": 189,
-              "text": "Учёба разбросана по пяти сервисам, а нужная ссылка всегда в "
+              "text": "Учёба разбросана по разным сервисам, а нужная ссылка всегда "
             },
             {
-              "name": "Chip / Платформа курса",
+              "name": "Frame 280",
               "type": "FRAME",
-              "x": 1100,
-              "y": 104,
-              "w": 224,
-              "h": 49
-            },
-            {
-              "name": "Chip / Zoom",
-              "type": "FRAME",
-              "x": 1336,
-              "y": 104,
-              "w": 103,
-              "h": 49
-            },
-            {
-              "name": "Chip / Telegram",
-              "type": "FRAME",
-              "x": 1451,
-              "y": 104,
-              "w": 136,
-              "h": 49
-            },
-            {
-              "name": "Chip / Google Календарь",
-              "type": "FRAME",
-              "x": 1164,
-              "y": 168,
-              "w": 231,
-              "h": 49
-            },
-            {
-              "name": "Chip / Google Диск",
-              "type": "FRAME",
-              "x": 1407,
-              "y": 168,
-              "w": 173,
-              "h": 49
-            },
-            {
-              "name": "Chip / Почта",
-              "type": "FRAME",
-              "x": 1124,
-              "y": 232,
-              "w": 108,
-              "h": 49
-            },
-            {
-              "name": "Chip / Notion",
-              "type": "FRAME",
-              "x": 1244,
-              "y": 232,
-              "w": 111,
-              "h": 49
-            },
-            {
-              "name": "Chip / Личные сообщения",
-              "type": "FRAME",
-              "x": 1367,
-              "y": 232,
-              "w": 242,
-              "h": 49
-            },
-            {
-              "name": "Chip / →  EduFlow: всё в одном кабинете",
-              "type": "FRAME",
-              "x": 1140,
-              "y": 312,
-              "w": 384,
-              "h": 49
+              "x": 1098,
+              "y": 145,
+              "w": 678,
+              "h": 189
             },
             {
               "name": "Pain / Разные точки касания",
@@ -169,13 +264,13 @@
               "text": "61%"
             },
             {
-              "name": "студентов совмещают учёбу с работой — времени на поиски нет",
+              "name": "студентов совмещают учёбу с работой — времени итак не хватает",
               "type": "TEXT",
               "x": 643,
               "y": 847,
               "w": 515,
               "h": 56,
-              "text": "студентов совмещают учёбу с работой — времени на поиски нет"
+              "text": "студентов совмещают учёбу с работой — времени итак не хватае"
             },
             {
               "name": "Stat",
@@ -206,12 +301,322 @@
             }
           ]
         }
-      ]
+      ],
+      "parent": "Frame 279",
+      "parentType": "FRAME"
+    },
+    {
+      "id": "goals",
+      "name": "03 Подход",
+      "preview": "previews/04-goals.png",
+      "height": 826,
+      "locked": false,
+      "rev": 2,
+      "layout": [
+        {
+          "name": "Approach",
+          "type": "FRAME",
+          "x": 40,
+          "y": 20,
+          "w": 1840,
+          "h": 786,
+          "children": [
+            {
+              "name": "Chip / О проекте",
+              "type": "FRAME",
+              "x": 64,
+              "y": 64,
+              "w": 122,
+              "h": 49
+            },
+            {
+              "name": "Frame 282",
+              "type": "FRAME",
+              "x": 64,
+              "y": 178,
+              "w": 1712,
+              "h": 544
+            }
+          ]
+        }
+      ],
+      "parent": "Frame 279",
+      "parentType": "FRAME"
+    },
+    {
+      "id": "jtbd",
+      "name": "05 Что нужно студенту",
+      "preview": "previews/05-jtbd.png",
+      "height": 777,
+      "locked": false,
+      "rev": 2,
+      "layout": [
+        {
+          "name": "JTBD",
+          "type": "FRAME",
+          "x": 32,
+          "y": 20,
+          "w": 1840,
+          "h": 737,
+          "children": [
+            {
+              "name": "image 2",
+              "type": "RECTANGLE",
+              "x": 1197,
+              "y": -27,
+              "w": 560,
+              "h": 514
+            },
+            {
+              "name": "Chip / О проекте",
+              "type": "FRAME",
+              "x": 64,
+              "y": 64,
+              "w": 209,
+              "h": 49
+            },
+            {
+              "name": "Что нужно студуенту",
+              "type": "TEXT",
+              "x": 64,
+              "y": 143,
+              "w": 251,
+              "h": 29,
+              "text": "Что нужно студуенту"
+            },
+            {
+              "name": "Job 1",
+              "type": "FRAME",
+              "x": 64,
+              "y": 223,
+              "w": 329,
+              "h": 250
+            },
+            {
+              "name": "Job 7",
+              "type": "FRAME",
+              "x": 408,
+              "y": 273,
+              "w": 329,
+              "h": 250
+            },
+            {
+              "name": "Job 8",
+              "type": "FRAME",
+              "x": 752,
+              "y": 323,
+              "w": 329,
+              "h": 250
+            },
+            {
+              "name": "Job 9",
+              "type": "FRAME",
+              "x": 1096,
+              "y": 373,
+              "w": 329,
+              "h": 250
+            },
+            {
+              "name": "Job 10",
+              "type": "FRAME",
+              "x": 1440,
+              "y": 423,
+              "w": 329,
+              "h": 250
+            }
+          ]
+        }
+      ],
+      "parent": "Frame 279",
+      "parentType": "FRAME"
     },
     {
       "id": "auth",
       "name": "06 Регистрация и вход",
-      "preview": "previews/02-auth.png",
+      "preview": "previews/06-auth.png",
+      "height": 820,
+      "locked": false,
+      "rev": 2,
+      "layout": [
+        {
+          "name": "Auth / Регистрация",
+          "type": "FRAME",
+          "x": 40,
+          "y": 20,
+          "w": 1840,
+          "h": 760,
+          "children": [
+            {
+              "name": "Vector",
+              "type": "VECTOR",
+              "x": 1470,
+              "y": -52,
+              "w": 596,
+              "h": 728
+            },
+            {
+              "name": "Label",
+              "type": "TEXT",
+              "x": 64,
+              "y": 56,
+              "w": 257,
+              "h": 29,
+              "text": "01 / Регистрация и вход"
+            },
+            {
+              "name": "Mockup / Browser",
+              "type": "FRAME",
+              "x": 64,
+              "y": 122,
+              "w": 1000,
+              "h": 745
+            },
+            {
+              "name": "Frame 53",
+              "type": "FRAME",
+              "x": 1124,
+              "y": 170,
+              "w": 480,
+              "h": 796
+            }
+          ]
+        }
+      ],
+      "parent": "Frame 279",
+      "parentType": "FRAME"
+    },
+    {
+      "id": "catalog",
+      "name": "07 Каталог и страница курса",
+      "preview": "previews/07-catalog.png",
+      "height": 2018,
+      "locked": false,
+      "rev": 3,
+      "layout": [
+        {
+          "name": "Catalog",
+          "type": "FRAME",
+          "x": 40,
+          "y": 20,
+          "w": 900,
+          "h": 1013,
+          "children": [
+            {
+              "name": "Label",
+              "type": "TEXT",
+              "x": 64,
+              "y": 56,
+              "w": 215,
+              "h": 29,
+              "text": "02 / Каталог курсов"
+            },
+            {
+              "name": "Mockup / Browser",
+              "type": "FRAME",
+              "x": 64,
+              "y": 136,
+              "w": 1000,
+              "h": 745
+            },
+            {
+              "name": "Фильтр по направлениям сразу под шапкой сужает выбор в один клик. Стек технологий в карточке показывает, чему научишься, ещё до перехода.",
+              "type": "TEXT",
+              "x": 64,
+              "y": 901,
+              "w": 761,
+              "h": 56,
+              "text": "Фильтр по направлениям сразу под шапкой сужает выбор в один "
+            }
+          ]
+        },
+        {
+          "name": "Catalog",
+          "type": "FRAME",
+          "x": 40,
+          "y": 1073,
+          "w": 900,
+          "h": 925,
+          "children": [
+            {
+              "name": "Vector",
+              "type": "VECTOR",
+              "x": -173,
+              "y": 399,
+              "w": 616,
+              "h": 546
+            },
+            {
+              "name": "Label",
+              "type": "TEXT",
+              "x": 64,
+              "y": 56,
+              "w": 166,
+              "h": 29,
+              "text": "04 / Мои курсы"
+            },
+            {
+              "name": "Mockup / Browser",
+              "type": "FRAME",
+              "x": 64,
+              "y": 136,
+              "w": 772,
+              "h": 575
+            },
+            {
+              "name": "Прогресс-бар показывает, сколько осталось, и подталкивает продолжить. Статус «В процессе / Завершён» помогает быстро найти текущий курс.",
+              "type": "TEXT",
+              "x": 408,
+              "y": 757,
+              "w": 417,
+              "h": 112,
+              "text": "Прогресс-бар показывает, сколько осталось, и подталкивает пр"
+            }
+          ]
+        },
+        {
+          "name": "Course page",
+          "type": "FRAME",
+          "x": 985,
+          "y": 20,
+          "w": 900,
+          "h": 1978,
+          "children": [
+            {
+              "name": "Label",
+              "type": "TEXT",
+              "x": 64,
+              "y": 56,
+              "w": 225,
+              "h": 29,
+              "text": "03 / Страница курса"
+            },
+            {
+              "name": "Screen / coursePromo",
+              "type": "FRAME",
+              "x": 64,
+              "y": 136,
+              "w": 772,
+              "h": 1710
+            },
+            {
+              "name": "Блоки идут в порядке принятия решения: о курсе → авторы → кому подходит → чему научусь → цена. Цена и кнопка собраны в одном месте.",
+              "type": "TEXT",
+              "x": 64,
+              "y": 1866,
+              "w": 761,
+              "h": 56,
+              "text": "Блоки идут в порядке принятия решения: о курсе → авторы → ко"
+            }
+          ]
+        }
+      ],
+      "parent": "Frame 279",
+      "parentType": "FRAME"
+    },
+    {
+      "id": "auth",
+      "name": "06 Регистрация и вход",
+      "preview": "previews/08-auth.png",
       "height": 820,
       "locked": false,
       "rev": 2,
@@ -270,7 +675,641 @@
             }
           ]
         }
-      ]
+      ],
+      "parent": "Кейс — EduFlow",
+      "parentType": "PAGE"
+    },
+    {
+      "id": "progress",
+      "name": "08 Мои курсы и прогресс",
+      "preview": "previews/09-progress.png",
+      "height": 973,
+      "locked": false,
+      "rev": 3,
+      "layout": [
+        {
+          "name": "Progress",
+          "type": "FRAME",
+          "x": 40,
+          "y": 20,
+          "w": 1840,
+          "h": 933,
+          "children": [
+            {
+              "name": "Frame 274",
+              "type": "FRAME",
+              "x": 64,
+              "y": 244,
+              "w": 528,
+              "h": 545
+            },
+            {
+              "name": "Label",
+              "type": "TEXT",
+              "x": 64,
+              "y": 56,
+              "w": 228,
+              "h": 29,
+              "text": "05 / Курс в обучении"
+            },
+            {
+              "name": "Caption",
+              "type": "TEXT",
+              "x": 64,
+              "y": 104,
+              "w": 560,
+              "h": 32,
+              "text": "Прогресс и следующий урок видны сразу"
+            },
+            {
+              "name": "Mockup / Browser",
+              "type": "FRAME",
+              "x": 696,
+              "y": 64,
+              "w": 1080,
+              "h": 805
+            },
+            {
+              "name": "Следующий урок, прогресс и дедлайн домашки — в первой строке. Студент сразу видит, что делать дальше.",
+              "type": "TEXT",
+              "x": 64,
+              "y": 813,
+              "w": 595,
+              "h": 56,
+              "text": "Следующий урок, прогресс и дедлайн домашки — в первой строке"
+            }
+          ]
+        }
+      ],
+      "parent": "Frame 279",
+      "parentType": "FRAME"
+    },
+    {
+      "id": "lesson",
+      "name": "09 Урок",
+      "preview": "previews/10-lesson.png",
+      "height": 1020,
+      "locked": false,
+      "rev": 3,
+      "layout": [
+        {
+          "name": "Lesson",
+          "type": "FRAME",
+          "x": 40,
+          "y": 20,
+          "w": 1840,
+          "h": 980,
+          "children": [
+            {
+              "name": "Label",
+              "type": "TEXT",
+              "x": 64,
+              "y": 56,
+              "w": 101,
+              "h": 29,
+              "text": "06 / Урок"
+            },
+            {
+              "name": "Caption",
+              "type": "TEXT",
+              "x": 64,
+              "y": 104,
+              "w": 900,
+              "h": 35,
+              "text": "Теория, код, домашнее задание и оглавление — на одном экране"
+            },
+            {
+              "name": "Mockup / Browser",
+              "type": "FRAME",
+              "x": 64,
+              "y": 194,
+              "w": 969,
+              "h": 722
+            },
+            {
+              "name": "Frame 58",
+              "type": "FRAME",
+              "x": 1072,
+              "y": -403,
+              "w": 704,
+              "h": 1189
+            },
+            {
+              "name": "Теория, код и домашка на одном экране. Дедлайн, следующая тема и кнопка «Задать вопрос» закреплены справа, уходить в чат или календарь не нужно.",
+              "type": "TEXT",
+              "x": 1072,
+              "y": 828,
+              "w": 705,
+              "h": 84,
+              "text": "Теория, код и домашка на одном экране. Дедлайн, следующая те"
+            }
+          ]
+        }
+      ],
+      "parent": "Frame 279",
+      "parentType": "FRAME"
+    },
+    {
+      "id": "chat",
+      "name": "10 Чат, профиль и календарь",
+      "preview": "previews/11-chat.png",
+      "height": 940,
+      "locked": false,
+      "rev": 3,
+      "layout": [
+        {
+          "name": "Chat",
+          "type": "FRAME",
+          "x": 40,
+          "y": 20,
+          "w": 900,
+          "h": 880,
+          "children": [
+            {
+              "name": "Label",
+              "type": "TEXT",
+              "x": 64,
+              "y": 56,
+              "w": 249,
+              "h": 29,
+              "text": "07 / Чат с наставником"
+            },
+            {
+              "name": "Mockup / Browser",
+              "type": "FRAME",
+              "x": 64,
+              "y": 135,
+              "w": 892,
+              "h": 665
+            }
+          ]
+        },
+        {
+          "name": "Profile & calendar",
+          "type": "FRAME",
+          "x": 980,
+          "y": 20,
+          "w": 900,
+          "h": 880,
+          "children": [
+            {
+              "name": "Label",
+              "type": "TEXT",
+              "x": 64,
+              "y": 56,
+              "w": 167,
+              "h": 29,
+              "text": "08 / Календарь"
+            },
+            {
+              "name": "Mockup / Browser",
+              "type": "FRAME",
+              "x": 64,
+              "y": 134,
+              "w": 892,
+              "h": 665
+            }
+          ]
+        }
+      ],
+      "parent": "Frame 279",
+      "parentType": "FRAME"
+    },
+    {
+      "id": "certificate",
+      "name": "11 Сертификат",
+      "preview": "previews/12-certificate.png",
+      "height": 856,
+      "locked": false,
+      "rev": 4,
+      "layout": [
+        {
+          "name": "Certificate",
+          "type": "FRAME",
+          "x": 980,
+          "y": 20,
+          "w": 900,
+          "h": 816,
+          "children": [
+            {
+              "name": "Frame 269",
+              "type": "FRAME",
+              "x": 257,
+              "y": 294,
+              "w": 719,
+              "h": 522
+            },
+            {
+              "name": "Label",
+              "type": "TEXT",
+              "x": 64,
+              "y": 56,
+              "w": 175,
+              "h": 29,
+              "text": "10 / Сертификат"
+            },
+            {
+              "name": "Screen / certificate",
+              "type": "FRAME",
+              "x": 173,
+              "y": 282,
+              "w": 554,
+              "h": 392
+            },
+            {
+              "name": "Сертификат скачивается из профиля в PDF и всегда под рукой для резюме.",
+              "type": "TEXT",
+              "x": 64,
+              "y": 141,
+              "w": 570,
+              "h": 56,
+              "text": "Сертификат скачивается из профиля в PDF и всегда под рукой д"
+            }
+          ]
+        },
+        {
+          "name": "Certificate",
+          "type": "FRAME",
+          "x": 40,
+          "y": 20,
+          "w": 900,
+          "h": 816,
+          "children": [
+            {
+              "name": "Label",
+              "type": "TEXT",
+              "x": 64,
+              "y": 56,
+              "w": 146,
+              "h": 29,
+              "text": "09 / Профиль"
+            },
+            {
+              "name": "Screen / profile",
+              "type": "FRAME",
+              "x": 64,
+              "y": 141,
+              "w": 772,
+              "h": 533
+            },
+            {
+              "name": "Чаты курсов и контакты куратора и наставника собраны в «Полезных ссылках», их больше не ищут в переписке.",
+              "type": "TEXT",
+              "x": 64,
+              "y": 704,
+              "w": 570,
+              "h": 56,
+              "text": "Чаты курсов и контакты куратора и наставника собраны в «Поле"
+            }
+          ]
+        }
+      ],
+      "parent": "Frame 279",
+      "parentType": "FRAME"
+    },
+    {
+      "id": "landing",
+      "name": "12 Лендинг",
+      "preview": "previews/13-landing.png",
+      "height": 2973,
+      "locked": false,
+      "rev": 4,
+      "layout": [
+        {
+          "name": "Landing",
+          "type": "FRAME",
+          "x": 40,
+          "y": 20,
+          "w": 1840,
+          "h": 2933,
+          "children": [
+            {
+              "name": "Label",
+              "type": "TEXT",
+              "x": 64,
+              "y": 56,
+              "w": 203,
+              "h": 29,
+              "text": "11 / Лендинг школы"
+            },
+            {
+              "name": "Caption",
+              "type": "TEXT",
+              "x": 64,
+              "y": 104,
+              "w": 900,
+              "h": 35,
+              "text": "Оффер, преимущества, этапы обучения, курсы, FAQ и заявка"
+            },
+            {
+              "name": "Отвечает на главные потребности взрослых студентов: преимущества, гибкий график, возврат денег и FAQ перед заявкой.",
+              "type": "TEXT",
+              "x": 1254,
+              "y": 207,
+              "w": 522,
+              "h": 84,
+              "text": "Отвечает на главные потребности взрослых студентов: преимуще"
+            }
+          ]
+        },
+        {
+          "name": "landing page",
+          "type": "FRAME",
+          "x": 104,
+          "y": 231,
+          "w": 830,
+          "h": 2290,
+          "children": [
+            {
+              "name": "Frame 245",
+              "type": "FRAME",
+              "x": 0,
+              "y": 0,
+              "w": 830,
+              "h": 590
+            },
+            {
+              "name": "Frame 235",
+              "type": "FRAME",
+              "x": 0,
+              "y": 590,
+              "w": 830,
+              "h": 519
+            },
+            {
+              "name": "Frame 258",
+              "type": "FRAME",
+              "x": 0,
+              "y": 1109,
+              "w": 830,
+              "h": 591
+            },
+            {
+              "name": "Frame 233",
+              "type": "FRAME",
+              "x": 0,
+              "y": 1700,
+              "w": 830,
+              "h": 590
+            },
+            {
+              "name": "Frame 236",
+              "type": "FRAME",
+              "x": 0,
+              "y": 2290,
+              "w": 830,
+              "h": 864
+            },
+            {
+              "name": "Frame 257",
+              "type": "FRAME",
+              "x": 0,
+              "y": 3154,
+              "w": 830,
+              "h": 317
+            },
+            {
+              "name": "Frame 144",
+              "type": "FRAME",
+              "x": 0,
+              "y": 3471,
+              "w": 830,
+              "h": 372
+            },
+            {
+              "name": "Frame 244",
+              "type": "FRAME",
+              "x": 0,
+              "y": 3843,
+              "w": 830,
+              "h": 230
+            },
+            {
+              "name": "Frame 252",
+              "type": "FRAME",
+              "x": 0,
+              "y": 4073,
+              "w": 830,
+              "h": 384
+            },
+            {
+              "name": "Frame 246",
+              "type": "FRAME",
+              "x": 0,
+              "y": 4457,
+              "w": 830,
+              "h": 394
+            }
+          ]
+        },
+        {
+          "name": "landing page",
+          "type": "FRAME",
+          "x": 987,
+          "y": 331,
+          "w": 830,
+          "h": 2558,
+          "children": [
+            {
+              "name": "Frame 245",
+              "type": "FRAME",
+              "x": 0,
+              "y": -2294,
+              "w": 830,
+              "h": 590
+            },
+            {
+              "name": "Frame 235",
+              "type": "FRAME",
+              "x": 0,
+              "y": -1704,
+              "w": 830,
+              "h": 519
+            },
+            {
+              "name": "Frame 258",
+              "type": "FRAME",
+              "x": 0,
+              "y": -1185,
+              "w": 830,
+              "h": 591
+            },
+            {
+              "name": "Frame 233",
+              "type": "FRAME",
+              "x": 0,
+              "y": -594,
+              "w": 830,
+              "h": 590
+            },
+            {
+              "name": "Frame 236",
+              "type": "FRAME",
+              "x": 0,
+              "y": -4,
+              "w": 830,
+              "h": 864
+            },
+            {
+              "name": "Frame 257",
+              "type": "FRAME",
+              "x": 0,
+              "y": 860,
+              "w": 830,
+              "h": 317
+            },
+            {
+              "name": "Frame 144",
+              "type": "FRAME",
+              "x": 0,
+              "y": 1177,
+              "w": 830,
+              "h": 372
+            },
+            {
+              "name": "Frame 244",
+              "type": "FRAME",
+              "x": 0,
+              "y": 1549,
+              "w": 830,
+              "h": 230
+            },
+            {
+              "name": "Frame 252",
+              "type": "FRAME",
+              "x": 0,
+              "y": 1779,
+              "w": 830,
+              "h": 384
+            },
+            {
+              "name": "Frame 246",
+              "type": "FRAME",
+              "x": 0,
+              "y": 2164,
+              "w": 830,
+              "h": 394
+            }
+          ]
+        }
+      ],
+      "parent": "Frame 279",
+      "parentType": "FRAME"
+    },
+    {
+      "id": "final",
+      "name": "14 Финал",
+      "preview": "previews/14-final.png",
+      "height": 774,
+      "locked": false,
+      "rev": 4,
+      "layout": [
+        {
+          "name": "Final",
+          "type": "FRAME",
+          "x": 40,
+          "y": 20,
+          "w": 1840,
+          "h": 714,
+          "children": [
+            {
+              "name": "Thanks",
+              "type": "TEXT",
+              "x": 64,
+              "y": 64,
+              "w": 460,
+              "h": 168,
+              "text": "Спасибо\nза внимание"
+            },
+            {
+              "name": "Chip / solntsee2017@mail.ru",
+              "type": "FRAME",
+              "x": 1464,
+              "y": 72,
+              "w": 312,
+              "h": 57
+            },
+            {
+              "name": "Wordmark",
+              "type": "TEXT",
+              "x": 66,
+              "y": 324,
+              "w": 1708,
+              "h": 346,
+              "text": "EDUFLOW"
+            }
+          ]
+        }
+      ],
+      "parent": "Frame 279",
+      "parentType": "FRAME"
+    }
+  ],
+  "page": [
+    {
+      "name": "01 Cover (черновик v0)",
+      "type": "FRAME",
+      "x": 2320,
+      "y": 0,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "name": "02 About (черновик v0)",
+      "type": "FRAME",
+      "x": 2320,
+      "y": 1240,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "name": "03 Catalog (черновик v0)",
+      "type": "FRAME",
+      "x": 2320,
+      "y": 2480,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "name": "04 Design system (черновик v0)",
+      "type": "FRAME",
+      "x": 2320,
+      "y": 3720,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "name": "refs",
+      "type": "SECTION",
+      "x": -3937,
+      "y": 0,
+      "w": 3710,
+      "h": 3439
+    },
+    {
+      "name": "Vector",
+      "type": "VECTOR",
+      "x": -1251,
+      "y": 3973,
+      "w": 560,
+      "h": 514
+    },
+    {
+      "name": "06 Регистрация и вход",
+      "type": "FRAME",
+      "x": 2336,
+      "y": 6174,
+      "w": 1920,
+      "h": 820,
+      "block": "auth"
+    },
+    {
+      "name": "Frame 279",
+      "type": "FRAME",
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 15375
     }
   ]
 }
